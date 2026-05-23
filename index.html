@@ -1216,7 +1216,44 @@ document.querySelectorAll('.sidebar .nav-item').forEach(el=>{
 });
 
 function doLogin() {
-  document.getElementById('login-screen').style.display='none';
+  const email = document.getElementById('login-user').value;
+  const password = document.getElementById('login-pass').value;
+  
+  if (!email || !password) {
+    alert('Email ve şifre zorunludur.');
+    return;
+  }
+
+  const btn = document.querySelector('.login-card .btn-or');
+  btn.innerHTML = '<i class="ti ti-loader"></i> Giriş yapılıyor...';
+  btn.disabled = true;
+
+  window.fbFunctions.signInWithEmailAndPassword(window.auth, email, password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      renderProducts(products);
+      const d = new Date();
+      const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+      const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+      const el = document.getElementById('clock-date');
+      if(el) el.textContent = d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+', '+days[d.getDay()];
+      updateRateDisplay();
+      fetchRates();
+      setInterval(fetchRates, 5*60*1000);
+    })
+  .catch((error) => {
+    btn.innerHTML = '<i class="ti ti-login"></i> Giriş Yap';
+    btn.disabled = false;
+    let msg = 'Giriş başarısız.';
+    if (error.code === 'auth/invalid-credential') msg = 'Email veya şifre hatalı.';
+    if (error.code === 'auth/user-not-found') msg = 'Kullanıcı bulunamadı.';
+    if (error.code === 'auth/wrong-password') msg = 'Şifre hatalı.';
+    if (error.code === 'auth/too-many-requests') msg = 'Çok fazla deneme. Lütfen bekleyin.';
+    alert(msg);
+  });
+document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
   renderProducts(products);
   const d=new Date();
