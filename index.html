@@ -7,6 +7,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+  // Firebase projenizin yapılandırma değerlerini buraya girin
+  // Firebase Console → Proje Ayarları → Genel → Uygulamalarınız
+  const firebaseConfig = {
+    apiKey:            "FIREBASE_API_KEY",
+    authDomain:        "FIREBASE_PROJECT_ID.firebaseapp.com",
+    projectId:         "FIREBASE_PROJECT_ID",
+    storageBucket:     "FIREBASE_PROJECT_ID.appspot.com",
+    messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID",
+    appId:             "FIREBASE_APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+</script>
 <style>
 :root{--or:#D45A00;--or-hover:#B84D00;--or-light:#FFF0E6;--or-dark:#8C3800;--or-border:#E89060;--or-bg:#FDF8F4;--white:#FFFFFF;--text-primary:#1C1410;--text-secondary:#6B5B4E;--text-tertiary:#9C8070;--border:#EDD8C8;--sidebar-w:210px;--font:'Figtree',sans-serif;--mono:'JetBrains Mono',monospace;--radius:10px;--radius-sm:6px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -321,6 +337,7 @@ select.form-input{cursor:pointer}
 .currency-select:focus{outline:none;border-color:var(--or)}
 .currency-converted{font-size:11px;color:var(--or-dark);margin-top:4px;min-height:16px;display:flex;align-items:center;gap:4px}
 .currency-converted i{font-size:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
 .login-logo{text-align:center;margin-bottom:28px}
 .login-icon{width:52px;height:52px;background:var(--or);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:26px;color:#fff}
 </style>
@@ -337,13 +354,14 @@ select.form-input{cursor:pointer}
     </div>
     <div class="form-group">
       <label class="form-label">Kullanıcı adı</label>
-      <input class="form-input" type="text" value="admin@caliskancanta.com">
+      <input class="form-input" id="login-email" type="text" value="admin@caliskancanta.com">
     </div>
     <div class="form-group">
       <label class="form-label">Şifre</label>
-      <input class="form-input" type="password" value="12345678">
+      <input class="form-input" id="login-password" type="password" value="12345678">
     </div>
-    <button class="btn btn-or" style="width:100%;justify-content:center;margin-top:4px" onclick="doLogin()">
+    <div id="login-error" style="display:none;background:#FCEBEB;border:1px solid #F0AAAA;border-radius:6px;padding:8px 12px;font-size:12px;color:#7A1F1F;margin-bottom:10px"></div>
+    <button class="btn btn-or" id="login-btn" style="width:100%;justify-content:center;margin-top:4px" onclick="doLogin()">
       <i class="ti ti-login"></i> Giriş Yap
     </button>
     <p style="text-align:center;font-size:11px;color:var(--text-tertiary);margin-top:14px">Firebase Authentication ile korunmaktadır</p>
@@ -473,7 +491,12 @@ select.form-input{cursor:pointer}
     <div id="screen-dashboard" class="screen active">
       <div class="topbar">
         <div class="page-title">Ana Ekran</div>
-        <div style="font-size:12px;color:var(--text-secondary)" id="clock-date"></div>
+        <div class="topbar-right">
+          <div style="font-size:12px;color:var(--text-secondary)" id="clock-date"></div>
+          <button class="btn btn-sm btn-danger" onclick="doLogout()" style="display:flex;align-items:center;gap:5px">
+            <i class="ti ti-logout" style="font-size:15px"></i> Çıkış Yap
+          </button>
+        </div>
       </div>
       <div class="grid-4" style="margin-bottom:16px">
         <div class="metric">
@@ -1189,7 +1212,7 @@ document.querySelectorAll('.sidebar .nav-item').forEach(el=>{
   el.addEventListener('click',()=>showScreen(el.dataset.screen));
 });
 
-function doLogin() {
+function showApp() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
   renderProducts(products);
@@ -1203,7 +1226,35 @@ function doLogin() {
   setInterval(fetchRates, 5*60*1000);
 }
 
-function doLogout() {
+async function doLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('login-error');
+  const btn      = document.getElementById('login-btn');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Giriş yapılıyor...';
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    showApp();
+  } catch(e) {
+    const msgs = {
+      'auth/invalid-credential':    'E-posta veya şifre hatalı.',
+      'auth/user-not-found':        'Bu e-posta adresiyle kayıtlı kullanıcı bulunamadı.',
+      'auth/wrong-password':        'Şifre hatalı.',
+      'auth/invalid-email':         'Geçersiz e-posta adresi.',
+      'auth/too-many-requests':     'Çok fazla başarısız deneme. Lütfen bir süre bekleyin.',
+    };
+    errEl.textContent = msgs[e.code] || 'Giriş başarısız: ' + e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-login"></i> Giriş Yap';
+  }
+}
+
+async function doLogout() {
+  try { await auth.signOut(); } catch(_) {}
   document.getElementById('app').style.display='none';
   document.getElementById('login-screen').style.display='flex';
 }
