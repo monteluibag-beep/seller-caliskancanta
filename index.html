@@ -7,34 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-<!-- Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyAJ-Fy5Qai4gAFBa55cGer8O3l8neMy2zI",
-    authDomain: "caliskancanta-seller.firebaseapp.com",
-    projectId: "caliskancanta-seller",
-    storageBucket: "caliskancanta-seller.firebasestorage.app",
-    messagingSenderId: "161310364502",
-    appId: "1:161310364502:web:47d52c38df6a3f60c6bcf7"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  window.db = db;
-  window.auth = auth;
-  window.fbFunctions = {
-    collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot,
-    signInWithEmailAndPassword, signOut, onAuthStateChanged
-  };
-
-  console.log("Firebase bağlandı ✅");
-</script>
 <style>
 :root{--or:#D45A00;--or-hover:#B84D00;--or-light:#FFF0E6;--or-dark:#8C3800;--or-border:#E89060;--or-bg:#FDF8F4;--white:#FFFFFF;--text-primary:#1C1410;--text-secondary:#6B5B4E;--text-tertiary:#9C8070;--border:#EDD8C8;--sidebar-w:210px;--font:'Figtree',sans-serif;--mono:'JetBrains Mono',monospace;--radius:10px;--radius-sm:6px}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1216,44 +1188,7 @@ document.querySelectorAll('.sidebar .nav-item').forEach(el=>{
 });
 
 function doLogin() {
-  const email = document.getElementById('login-user').value;
-  const password = document.getElementById('login-pass').value;
-  
-  if (!email || !password) {
-    alert('Email ve şifre zorunludur.');
-    return;
-  }
-
-  const btn = document.querySelector('.login-card .btn-or');
-  btn.innerHTML = '<i class="ti ti-loader"></i> Giriş yapılıyor...';
-  btn.disabled = true;
-
-  window.fbFunctions.signInWithEmailAndPassword(window.auth, email, password)
-    .then((userCredential) => {
-      const user = userCredential.user;
-      document.getElementById('login-screen').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-      renderProducts(products);
-      const d = new Date();
-      const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
-      const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-      const el = document.getElementById('clock-date');
-      if(el) el.textContent = d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+', '+days[d.getDay()];
-      updateRateDisplay();
-      fetchRates();
-      setInterval(fetchRates, 5*60*1000);
-    })
-  .catch((error) => {
-    btn.innerHTML = '<i class="ti ti-login"></i> Giriş Yap';
-    btn.disabled = false;
-    let msg = 'Giriş başarısız.';
-    if (error.code === 'auth/invalid-credential') msg = 'Email veya şifre hatalı.';
-    if (error.code === 'auth/user-not-found') msg = 'Kullanıcı bulunamadı.';
-    if (error.code === 'auth/wrong-password') msg = 'Şifre hatalı.';
-    if (error.code === 'auth/too-many-requests') msg = 'Çok fazla deneme. Lütfen bekleyin.';
-    alert(msg);
-  });
-document.getElementById('login-screen').style.display='none';
+  document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
   renderProducts(products);
   const d=new Date();
