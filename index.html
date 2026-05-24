@@ -9,17 +9,19 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <!-- Firebase -->
 <script>
-  // Sayfa yüklenirken localStorage'dan user bilgisini kontrol et
+  // localStorage'dan session'u kontrol et - bu KESIN kaynak
   function checkLocalSession() {
     const savedUser = localStorage.getItem('__cc_user_session');
-    console.log("📋 localStorage session check:", savedUser ? "FOUND" : "NOT FOUND");
+    console.log("📋 localStorage check:", savedUser ? "✅ FOUND" : "❌ NOT FOUND");
     return savedUser ? JSON.parse(savedUser) : null;
   }
 
-  // Başlangıçta localStorage'da session varsa, loading'i kapat ve app göster
+  // Sayfa açılır açılmaz localStorage'dan session'u restore et
   const hasLocalSession = checkLocalSession();
+  window.__isLocallyAuthenticated = !!hasLocalSession;
+  
   if (hasLocalSession) {
-    console.log("⚡ Yerel session bulundu, uygulama hazırlanıyor...");
+    console.log("⚡ Yerel oturum bulundu, uygulama gösteriliyoruz (Firebase verification bekleniyor)");
     document.addEventListener('DOMContentLoaded', () => {
       const loadingScreen = document.getElementById('loading-screen');
       const loginScreen = document.getElementById('login-screen');
@@ -29,7 +31,7 @@
       if (loginScreen) loginScreen.style.display = 'none';
       if (appContainer) appContainer.style.display = 'block';
       
-      // UI'ı güncelle
+      // UI'ı hemen güncelle
       if (typeof renderProducts === 'function') renderProducts(window.products || []);
       if (typeof updateRateDisplay === 'function') updateRateDisplay();
       if (typeof fetchRates === 'function') { fetchRates(); setInterval(fetchRates, 5*60*1000); }
@@ -77,24 +79,33 @@
       if (window.authUnsubscribe) window.authUnsubscribe();
       
       window.authUnsubscribe = onAuthStateChanged(auth, (user) => {
-        console.log("🔐 Firebase Auth State:", user ? "✅ User: " + user.email : "❌ No User");
+        console.log("🔐 Firebase Auth State:", user ? "✅ " + user.email : "❌ No User");
         
-        // Her auth state change'de localStorage'u güncelle
         if (user) {
-          // User login'di, bilgisini localStorage'a kaydet
+          // User Firebase'de login'di
           localStorage.setItem('__cc_user_session', JSON.stringify({
             uid: user.uid,
             email: user.email,
             displayName: user.displayName
           }));
-          console.log("💾 Oturum localStorage'a kaydedildi");
+          window.__isLocallyAuthenticated = true;
+          console.log("💾 Firebase user localStorage'a kaydedildi");
+          updateAuthUI(user);
         } else {
-          // User logout'du, localStorage'dan sil
+          // User Firebase'de logout'du VEYA henüz load olmadı
+          // ÖNEMLI: localStorage'dan session varsa, logout callback'ini IGNORE ET
+          if (window.__isLocallyAuthenticated) {
+            console.log("⚠️ Firebase logout oldu AMA localStorage session var, görmezden geliyoruz...");
+            // Hiçbir şey yapma, app açık kalacak
+            return;
+          }
+          
+          // localStorage session yoksa, gerçekten logout et
           localStorage.removeItem('__cc_user_session');
-          console.log("🗑️ Oturum localStorage'dan silindi");
+          window.__isLocallyAuthenticated = false;
+          console.log("🗑️ Kullanıcı tamamen logout oldu");
+          updateAuthUI(null);
         }
-        
-        updateAuthUI(user);
       });
       
     } catch (error) {
@@ -107,6 +118,12 @@
   }
 
   function updateAuthUI(user) {
+    // localStorage'dan session varsa ve user null ise, update yapmayı skip et
+    if (!user && window.__isLocallyAuthenticated) {
+      console.log("⏭️ UI update skip: localStorage session koruması");
+      return;
+    }
+    
     const loadingScreen = document.getElementById('loading-screen');
     const loginScreen = document.getElementById('login-screen');
     const appContainer = document.getElementById('app');
@@ -114,9 +131,9 @@
     // Loading screen gizle
     if (loadingScreen) loadingScreen.style.display = 'none';
     
-    if (user) {
-      // ✅ LOGGED IN
-      console.log("✅ UI güncelleniyor: Oturum açılı");
+    if (user || window.__isLocallyAuthenticated) {
+      // ✅ LOGGED IN (Firebase veya localStorage'dan)
+      console.log("✅ UI: Oturum açılı");
       if (loginScreen) loginScreen.style.display = 'none';
       if (appContainer) appContainer.style.display = 'block';
       
@@ -140,7 +157,7 @@
       }
     } else {
       // ❌ LOGGED OUT
-      console.log("❌ UI güncelleniyor: Oturum kapalı");
+      console.log("❌ UI: Oturum kapalı");
       if (loginScreen) loginScreen.style.display = 'flex';
       if (appContainer) appContainer.style.display = 'none';
       
