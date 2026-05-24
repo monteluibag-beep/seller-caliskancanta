@@ -398,7 +398,8 @@ select.form-input{cursor:pointer}
   <div class="nav-item drawer-nav" data-screen="settings" onclick="showScreen('settings');closeDrawer()"><i class="ti ti-settings"></i> Ayarlar</div>
   <div class="sidebar-user" style="margin-top:auto">
     <div class="user-av">MT</div>
-    <div><div class="user-name">Mert Taşkın</div><div class="user-role">Satış Temsilcisi</div></div>
+    <div style="flex:1"><div class="user-name">Mert Taşkın</div><div class="user-role">Satış Temsilcisi</div></div>
+    <button onclick="doLogout();closeDrawer()" title="Çıkış Yap" style="width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,.15);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:15px;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"><i class="ti ti-logout"></i></button>
   </div>
 </div>
 
@@ -433,10 +434,11 @@ select.form-input{cursor:pointer}
     <div class="nav-item" data-screen="settings"><i class="ti ti-settings"></i> Ayarlar</div>
     <div class="sidebar-user">
       <div class="user-av">MT</div>
-      <div>
+      <div style="flex:1">
         <div class="user-name">Mert Taşkın</div>
         <div class="user-role">Satış Temsilcisi</div>
       </div>
+      <button onclick="doLogout()" title="Çıkış Yap" style="width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,.15);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:15px;flex-shrink:0" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"><i class="ti ti-logout"></i></button>
     </div>
     <!-- DÖVİZ KURLARI (SIDEBAR) -->
     <div class="sidebar-rates" id="sidebar-rates">
@@ -1199,6 +1201,11 @@ function doLogin() {
   updateRateDisplay();
   fetchRates();
   setInterval(fetchRates, 5*60*1000);
+}
+
+function doLogout() {
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
 }
 
 function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('drawer-overlay').classList.add('open');document.body.style.overflow='hidden';}
