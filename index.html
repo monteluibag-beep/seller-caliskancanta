@@ -28,6 +28,28 @@
   window.fbFunctions = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, signInWithEmailAndPassword, signOut, onAuthStateChanged };
   console.log("Firebase bağlandı ✅");
   window.firebaseReady = true;
+
+  // Oturum durumunu takip et
+  onAuthStateChanged(auth, (user) => {
+    document.getElementById('loading-screen').style.display = 'none';
+    if (user) {
+      // Kullanıcı giriş yapmış — uygulamayı göster
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      if (typeof renderProducts === 'function') renderProducts(window.products || []);
+      const d = new Date();
+      const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+      const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+      const el = document.getElementById('clock-date');
+      if (el) el.textContent = d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+', '+days[d.getDay()];
+      if (typeof updateRateDisplay === 'function') updateRateDisplay();
+      if (typeof fetchRates === 'function') { fetchRates(); setInterval(fetchRates, 5*60*1000); }
+    } else {
+      // Kullanıcı çıkış yapmış — login ekranını göster
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+    }
+  });
 </script>
 <style>
 :root{--or:#D45A00;--or-hover:#B84D00;--or-light:#FFF0E6;--or-dark:#8C3800;--or-border:#E89060;--or-bg:#FDF8F4;--white:#FFFFFF;--text-primary:#1C1410;--text-secondary:#6B5B4E;--text-tertiary:#9C8070;--border:#EDD8C8;--sidebar-w:210px;--font:'Figtree',sans-serif;--mono:'JetBrains Mono',monospace;--radius:10px;--radius-sm:6px}
@@ -263,7 +285,13 @@ select.form-input{cursor:pointer}
 <body>
 
 <!-- GİRİŞ -->
-<div id="login-screen" class="login-wrap">
+<div id="loading-screen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FDF8F4">
+  <div style="text-align:center">
+    <div style="width:52px;height:52px;background:#D45A00;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;color:#fff"><i class="ti ti-briefcase"></i></div>
+    <div style="font-size:14px;color:#6B5B4E">Yükleniyor...</div>
+  </div>
+</div>
+<div id="login-screen" class="login-wrap" style="display:none">
   <div class="login-card">
     <div class="login-logo">
       <div class="login-icon"><i class="ti ti-briefcase"></i></div>
@@ -327,7 +355,6 @@ select.form-input{cursor:pointer}
   <div class="sidebar-user" style="margin-top:auto">
     <div class="user-av">MT</div>
     <div><div class="user-name">Mert Taşkın</div><div class="user-role">Satış Temsilcisi</div></div><button onclick="doLogout()" style="margin-left:auto;width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,.15);border:none;cursor:pointer;color:#fff;font-size:16px" title="Çıkış Yap"><i class="ti ti-logout"></i></button>
-    <button onclick="doLogout()" style="margin-left:auto;width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,.15);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:14px" title="Çıkış Yap"><i class="ti ti-logout"></i></button>
   </div>
 </div>
 <div class="bottom-nav">
@@ -767,6 +794,7 @@ let products=[
   {id:7,code:'ALT-26-0001-STD-BLK',barcode:'8690400000016',name:'Alet Çantası Standart',catId:4,shelf:'D',row:1,cost:120,list:184,stock:22,status:'active'},
   {id:8,code:'EL-26-0002-STD-BLK',barcode:'8690300000026',name:'El Çantası Siyah Deri',catId:3,shelf:'C',row:3,cost:110,list:168,stock:41,status:'active'},
 ];
+window.products = products;
 let movements=[
   {pid:1,type:'in',qty:200,date:'12 May 2026'},
   {pid:2,type:'out',qty:20,date:'11 May 2026'},
@@ -782,6 +810,7 @@ let offerItems=[
 let discTiers=[{qty:10,pct:15},{qty:20,pct:18},{qty:30,pct:22},{qty:40,pct:25},{qty:50,pct:30},{qty:100,pct:35},{qty:200,pct:40},{qty:500,pct:50},{qty:1000,pct:55}];
 let selectedCatId=null;
 let productPhotos=[];
+window._products = null;
 
 // ── NAVİGASYON ──────────────────────────
 const navMap={dashboard:'dashboard',products:'products',addproduct:'products',stock:'stock',sales:'sales',offers:'offers',newOffer:'offers',pdfPreview:'offers',categories:'categories',users:'users',settings:'settings'};
@@ -839,15 +868,9 @@ function doLogin(){
   btn.disabled=true;
   window.fbFunctions.signInWithEmailAndPassword(window.auth,email,password)
     .then(()=>{
-      document.getElementById('login-screen').style.display='none';
-      document.getElementById('app').style.display='block';
-      renderProducts(products);
-      const d=new Date();
-      const days=['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
-      const months=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-      const el=document.getElementById('clock-date');
-      if(el)el.textContent=d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+', '+days[d.getDay()];
-      updateRateDisplay();fetchRates();setInterval(fetchRates,5*60*1000);
+      btn.innerHTML='<i class="ti ti-login"></i> Giriş Yap';
+      btn.disabled=false;
+      // onAuthStateChanged otomatik halledecek
     })
     .catch((error)=>{
       btn.innerHTML='<i class="ti ti-login"></i> Giriş Yap';
