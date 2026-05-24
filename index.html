@@ -8,6 +8,35 @@
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <!-- Firebase -->
+<script>
+  // Sayfa yüklenirken localStorage'dan user bilgisini kontrol et
+  function checkLocalSession() {
+    const savedUser = localStorage.getItem('__cc_user_session');
+    console.log("📋 localStorage session check:", savedUser ? "FOUND" : "NOT FOUND");
+    return savedUser ? JSON.parse(savedUser) : null;
+  }
+
+  // Başlangıçta localStorage'da session varsa, loading'i kapat ve app göster
+  const hasLocalSession = checkLocalSession();
+  if (hasLocalSession) {
+    console.log("⚡ Yerel session bulundu, uygulama hazırlanıyor...");
+    document.addEventListener('DOMContentLoaded', () => {
+      const loadingScreen = document.getElementById('loading-screen');
+      const loginScreen = document.getElementById('login-screen');
+      const appContainer = document.getElementById('app');
+      
+      if (loadingScreen) loadingScreen.style.display = 'none';
+      if (loginScreen) loginScreen.style.display = 'none';
+      if (appContainer) appContainer.style.display = 'block';
+      
+      // UI'ı güncelle
+      if (typeof renderProducts === 'function') renderProducts(window.products || []);
+      if (typeof updateRateDisplay === 'function') updateRateDisplay();
+      if (typeof fetchRates === 'function') { fetchRates(); setInterval(fetchRates, 5*60*1000); }
+    });
+  }
+</script>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -31,7 +60,7 @@
       // Persistence'ı KESINLIKLE aktif et
       try {
         await setPersistence(auth, browserLocalPersistence);
-        console.log("✅ LocalStorage persistence aktif");
+        console.log("✅ Firebase persistence aktif");
       } catch (persistError) {
         console.warn("⚠️ Persistence hatası:", persistError);
       }
@@ -44,14 +73,26 @@
       
       console.log("✅ Firebase hazırlandı");
 
-      // onAuthStateChanged listener'ını kurmadan önce biraz bekle
-      await new Promise(resolve => setTimeout(resolve, 100));
-
       // Oturum durumunu takip et
       if (window.authUnsubscribe) window.authUnsubscribe();
       
       window.authUnsubscribe = onAuthStateChanged(auth, (user) => {
-        console.log("🔐 Auth State Change:", user ? "Logged In" : "Logged Out");
+        console.log("🔐 Firebase Auth State:", user ? "✅ User: " + user.email : "❌ No User");
+        
+        // Her auth state change'de localStorage'u güncelle
+        if (user) {
+          // User login'di, bilgisini localStorage'a kaydet
+          localStorage.setItem('__cc_user_session', JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName
+          }));
+          console.log("💾 Oturum localStorage'a kaydedildi");
+        } else {
+          // User logout'du, localStorage'dan sil
+          localStorage.removeItem('__cc_user_session');
+          console.log("🗑️ Oturum localStorage'dan silindi");
+        }
         
         updateAuthUI(user);
       });
