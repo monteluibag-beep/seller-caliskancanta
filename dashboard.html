@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ana Ekran — Çalışkan Çanta</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="loading-inner">
+    <div class="loading-logo"><i class="ti ti-briefcase"></i></div>
+    <div class="loading-text">Yükleniyor...</div>
+  </div>
+</div>
+
+<!-- MOBİL TOPBAR -->
+<div class="mob-topbar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="hamburger" onclick="openDrawer()"><i class="ti ti-menu-2"></i></button>
+    <span style="font-size:14px;font-weight:700;color:#fff">Çalışkan Çanta</span>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <div style="text-align:right">
+      <div style="font-size:9px;color:rgba(255,255,255,.35)">USD</div>
+      <div style="font-size:11px;font-weight:600;color:#fff" id="mob-usd">—</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:9px;color:rgba(255,255,255,.35)">EUR</div>
+      <div style="font-size:11px;font-weight:600;color:#fff" id="mob-eur">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- DRAWER -->
+<div class="drawer" id="drawer">
+  <button class="drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></button>
+  <div class="sidebar-brand" style="margin-top:4px;padding-right:40px">
+    <div class="brand-logo"><i class="ti ti-briefcase"></i></div>
+    <div class="brand-name">Çalışkan Çanta</div>
+  </div>
+  <div class="nav-group">
+    <a class="nav-item" href="/dashboard.html" data-page="dashboard" onclick="closeDrawer()"><i class="ti ti-layout-dashboard"></i> Ana Ekran</a>
+    <a class="nav-item" href="/products.html" data-page="products" onclick="closeDrawer()"><i class="ti ti-package"></i> Ürünler</a>
+    <a class="nav-item" href="/stock.html" data-page="stock" onclick="closeDrawer()"><i class="ti ti-stack"></i> Stoklar</a>
+    <a class="nav-item" href="/sales.html" data-page="sales" onclick="closeDrawer()"><i class="ti ti-receipt"></i> Satışlar</a>
+    <a class="nav-item" href="/offers.html" data-page="offers" onclick="closeDrawer()"><i class="ti ti-file-text"></i> Teklifler</a>
+    <a class="nav-item" href="/categories.html" data-page="categories" onclick="closeDrawer()"><i class="ti ti-tag"></i> Kategoriler</a>
+    <a class="nav-item" href="/users.html" data-page="users" onclick="closeDrawer()"><i class="ti ti-users"></i> Kullanıcılar</a>
+    <a class="nav-item" href="/settings.html" data-page="settings" onclick="closeDrawer()"><i class="ti ti-settings"></i> Ayarlar</a>
+  </div>
+  <div class="sidebar-footer" style="margin-top:auto">
+    <div class="user-card">
+      <div class="user-av" id="user-av">—</div>
+      <div class="user-info"><div class="user-name" id="user-name">—</div><div class="user-role" id="user-email"></div></div>
+      <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <a class="bnav" href="/dashboard.html" data-page="dashboard"><i class="ti ti-layout-dashboard"></i>Ana</a>
+  <a class="bnav" href="/products.html" data-page="products"><i class="ti ti-package"></i>Ürünler</a>
+  <a class="bnav" href="/offers.html" data-page="offers"><i class="ti ti-file-text"></i>Teklifler</a>
+  <a class="bnav" href="/sales.html" data-page="sales"><i class="ti ti-receipt"></i>Satışlar</a>
+  <button class="bnav" onclick="openDrawer()"><i class="ti ti-dots"></i>Daha</button>
+</div>
+
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo"><i class="ti ti-briefcase"></i></div>
+      <div class="brand-name">Çalışkan Çanta</div>
+      <div class="brand-url">seller.caliskancanta.com</div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Genel</div>
+      <a class="nav-item" href="/dashboard.html" data-page="dashboard"><i class="ti ti-layout-dashboard"></i> Ana Ekran</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Yönetim</div>
+      <a class="nav-item" href="/products.html" data-page="products"><i class="ti ti-package"></i> Ürünler</a>
+      <a class="nav-item" href="/stock.html" data-page="stock"><i class="ti ti-stack"></i> Stoklar</a>
+      <a class="nav-item" href="/sales.html" data-page="sales"><i class="ti ti-receipt"></i> Satışlar</a>
+      <a class="nav-item" href="/offers.html" data-page="offers"><i class="ti ti-file-text"></i> Teklifler</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Sistem</div>
+      <a class="nav-item" href="/categories.html" data-page="categories"><i class="ti ti-tag"></i> Kategoriler</a>
+      <a class="nav-item" href="/users.html" data-page="users"><i class="ti ti-users"></i> Kullanıcılar</a>
+      <a class="nav-item" href="/settings.html" data-page="settings"><i class="ti ti-settings"></i> Ayarlar</a>
+    </div>
+    <div class="rates-bar">
+      <div class="rate-row"><span class="rate-label">🇺🇸 USD/TRY</span><div style="display:flex;align-items:center;gap:5px"><span class="rate-val" id="r-usd">—</span><span class="rate-chg" id="r-usd-c"></span></div></div>
+      <div class="rate-row"><span class="rate-label">🇪🇺 EUR/TRY</span><div style="display:flex;align-items:center;gap:5px"><span class="rate-val" id="r-eur">—</span><span class="rate-chg" id="r-eur-c"></span></div></div>
+      <div class="rate-row"><span class="rate-label">🇬🇧 GBP/TRY</span><div style="display:flex;align-items:center;gap:5px"><span class="rate-val" id="r-gbp">—</span><span class="rate-chg" id="r-gbp-c"></span></div></div>
+      <div class="rate-time" id="r-time">güncelleniyor...</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="user-av" id="user-av">—</div>
+        <div class="user-info"><div class="user-name" id="user-name">—</div><div class="user-role" id="user-email"></div></div>
+        <button class="logout-btn" onclick="doLogout()" title="Çıkış"><i class="ti ti-logout"></i></button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div>
+          <div class="page-title">Ana Ekran</div>
+          <div class="page-sub" id="today-date"></div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <a href="/products.html" class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Yeni Ürün</a>
+        <a href="/offers.html" class="btn btn-sm"><i class="ti ti-file-text"></i> Yeni Teklif</a>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="ti ti-stack"></i></div>
+          <div class="stat-label">Toplam Stok</div>
+          <div class="stat-value">1.240</div>
+          <div class="stat-sub">38 farklı ürün</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="ti ti-receipt"></i></div>
+          <div class="stat-label">Bu Ay Satış</div>
+          <div class="stat-value">₺48.350</div>
+          <div class="stat-sub">124 işlem</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="ti ti-file-text"></i></div>
+          <div class="stat-label">Açık Teklifler</div>
+          <div class="stat-value">7</div>
+          <div class="stat-sub">2 yanıt bekliyor</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="ti ti-alert-triangle"></i></div>
+          <div class="stat-label">Düşük Stok</div>
+          <div class="stat-value">5</div>
+          <div class="stat-sub">yenileme gerekli</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Son Satışlar -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Son Satışlar</div>
+            <a href="/sales.html" class="btn btn-sm"><i class="ti ti-arrow-right"></i> Tümü</a>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Ürün</th><th>Adet</th><th>Tutar</th><th>Durum</th></tr></thead>
+            <tbody>
+              <tr><td>Sırt Çantası M</td><td>50</td><td style="font-weight:700">₺6.250</td><td><span class="badge badge-green">Tamamlandı</span></td></tr>
+              <tr><td>Evrak Çantası</td><td>20</td><td style="font-weight:700">₺3.800</td><td><span class="badge badge-green">Tamamlandı</span></td></tr>
+              <tr><td>Laptop Çantası</td><td>10</td><td style="font-weight:700">₺2.100</td><td><span class="badge badge-amber">Bekliyor</span></td></tr>
+              <tr><td>Omuz Çantası</td><td>100</td><td style="font-weight:700">₺9.500</td><td><span class="badge badge-green">Tamamlandı</span></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <!-- Stok Uyarıları -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Stok Uyarıları</div>
+            <a href="/stock.html" class="btn btn-sm"><i class="ti ti-arrow-right"></i> Tümü</a>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Ürün</th><th>Raf</th><th>Stok</th><th>Durum</th></tr></thead>
+            <tbody>
+              <tr><td>Bel Çantası S</td><td><span class="shelf">B1</span></td><td style="color:#DC2626;font-weight:700">3</td><td><span class="badge badge-red">Kritik</span></td></tr>
+              <tr><td>Okul Çantası</td><td><span class="shelf">C5</span></td><td style="color:#D97706;font-weight:700">7</td><td><span class="badge badge-amber">Düşük</span></td></tr>
+              <tr><td>Spor Çanta L</td><td><span class="shelf">D1</span></td><td style="color:#D97706;font-weight:700">5</td><td><span class="badge badge-amber">Düşük</span></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initPage } from './_common.js';
+
+initPage('dashboard', (user) => {
+  const d = new Date();
+  const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  const el = document.getElementById('today-date');
+  if(el) el.textContent = d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+', '+days[d.getDay()];
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!-- Ortak Sidebar - Her sayfaya kopyalanacak, SAYFA_ADI değiştirilecek -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo"><i class="ti ti-briefcase"></i></div>
+    <div class="brand-name">Çalışkan Çanta</div>
+    <div class="brand-url">seller.caliskancanta.com</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Genel</div>
+    <a class="nav-item" href="/dashboard.html" data-page="dashboard"><i class="ti ti-layout-dashboard"></i> Ana Ekran</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Yönetim</div>
+    <a class="nav-item" href="/products.html" data-page="products"><i class="ti ti-package"></i> Ürünler</a>
+    <a class="nav-item" href="/stock.html" data-page="stock"><i class="ti ti-stack"></i> Stoklar</a>
+    <a class="nav-item" href="/sales.html" data-page="sales"><i class="ti ti-receipt"></i> Satışlar</a>
+    <a class="nav-item" href="/offers.html" data-page="offers"><i class="ti ti-file-text"></i> Teklifler</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-label">Sistem</div>
+    <a class="nav-item" href="/categories.html" data-page="categories"><i class="ti ti-tag"></i> Kategoriler</a>
+    <a class="nav-item" href="/users.html" data-page="users"><i class="ti ti-users"></i> Kullanıcılar</a>
+    <a class="nav-item" href="/settings.html" data-page="settings"><i class="ti ti-settings"></i> Ayarlar</a>
+  </div>
+
+  <!-- Döviz Kurları -->
+  <div class="rates-bar">
+    <div class="rate-row"><span class="rate-label">🇺🇸 USD/TRY</span><span class="rate-val" id="r-usd">—</span><span class="rate-chg" id="r-usd-c"></span></div>
+    <div class="rate-row"><span class="rate-label">🇪🇺 EUR/TRY</span><span class="rate-val" id="r-eur">—</span><span class="rate-chg" id="r-eur-c"></span></div>
+    <div class="rate-row"><span class="rate-label">🇬🇧 GBP/TRY</span><span class="rate-val" id="r-gbp">—</span><span class="rate-chg" id="r-gbp-c"></span></div>
+    <div class="rate-time" id="r-time">güncelleniyor...</div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-av" id="user-av">—</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">Yükleniyor...</div>
+        <div class="user-role" id="user-email"></div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()" title="Çıkış Yap"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+</aside>
