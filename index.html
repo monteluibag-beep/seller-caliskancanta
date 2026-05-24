@@ -209,22 +209,25 @@ body::after {
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+// 1. Modüler paketler yerine tarayıcı dostu COMPAT script linklerini (CDN) kullanıyoruz (eval içermezler)
+import firebase from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js';
+import 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js';
 
-const app = initializeApp({
+const firebaseConfig = {
   apiKey: "AIzaSyAJ-Fy5Qai4gAFBa55cGer8O3l8neMy2zI",
   authDomain: "caliskancanta-seller.firebaseapp.com",
   projectId: "caliskancanta-seller",
   storageBucket: "caliskancanta-seller.firebasestorage.app",
   messagingSenderId: "161310364502",
   appId: "1:161310364502:web:47d52c38df6a3f60c6bcf7"
-});
+};
 
-const auth = getAuth(app);
+// 2. Firebase'i güvenli yöntemle başlatıyoruz
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
-// Zaten giriş yapılmışsa dashboard'a yönlendir
-onAuthStateChanged(auth, (user) => {
+// Zaten giriş yapılmışsa dashboard'a yönlendir (Temiz ve tekil kontrol)
+auth.onAuthStateChanged((user) => {
   if (user) window.location.href = '/dashboard.html';
 });
 
@@ -245,7 +248,8 @@ window.doLogin = async function() {
   btn.disabled = true;
 
   try {
-    await signInWithEmailAndPassword(auth, email, password);
+    // Eval hatasına neden olan modüler yapı yerine tamamen güvenli Compat (v8) istek yapısı
+    await auth.signInWithEmailAndPassword(email, password);
     window.location.href = '/dashboard.html';
   } catch(e) {
     btn.innerHTML = '<i class="ti ti-login"></i> Giriş Yap';
