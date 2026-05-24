@@ -13,7 +13,7 @@
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   
-  (async () => {
+  async function initializeFirebase() {
     try {
       const firebaseConfig = {
         apiKey: "AIzaSyAJ-Fy5Qai4gAFBa55cGer8O3l8neMy2zI",
@@ -28,61 +28,100 @@
       const db = getFirestore(app);
       const auth = getAuth(app);
       
-      // Persistence ayarını MUTLAKA setleyelim
-      await setPersistence(auth, browserLocalPersistence);
+      // Persistence'ı KESINLIKLE aktif et
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+        console.log("✅ LocalStorage persistence aktif");
+      } catch (persistError) {
+        console.warn("⚠️ Persistence hatası:", persistError);
+      }
       
+      // Global objelere kaydet
       window.db = db;
       window.auth = auth;
       window.fbFunctions = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, signInWithEmailAndPassword, signOut, onAuthStateChanged };
-      
-      console.log("Firebase bağlandı ✅");
       window.firebaseReady = true;
+      
+      console.log("✅ Firebase hazırlandı");
 
-      // Oturum durumunu takip et - sayfa refresh'de session korunsun
+      // onAuthStateChanged listener'ını kurmadan önce biraz bekle
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Oturum durumunu takip et
+      if (window.authUnsubscribe) window.authUnsubscribe();
+      
       window.authUnsubscribe = onAuthStateChanged(auth, (user) => {
-        const loadingScreen = document.getElementById('loading-screen');
-        const loginScreen = document.getElementById('login-screen');
-        const appContainer = document.getElementById('app');
+        console.log("🔐 Auth State Change:", user ? "Logged In" : "Logged Out");
         
-        if (loadingScreen) loadingScreen.style.display = 'none';
-        
-        if (user) {
-          // ✅ Kullanıcı giriş yapmış — uygulamayı göster
-          if (loginScreen) loginScreen.style.display = 'none';
-          if (appContainer) appContainer.style.display = 'block';
-          
-          if (typeof renderProducts === 'function') renderProducts(window.products || []);
-          
-          const d = new Date();
-          const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
-          const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-          const el = document.getElementById('clock-date');
-          if (el) el.textContent = d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+', '+days[d.getDay()];
-          
-          if (typeof updateRateDisplay === 'function') updateRateDisplay();
-          if (typeof fetchRates === 'function') { fetchRates(); setInterval(fetchRates, 5*60*1000); }
-        } else {
-          // ❌ Kullanıcı oturum açmamış veya çıkış yaptı
-          if (loginScreen) loginScreen.style.display = 'flex';
-          if (appContainer) appContainer.style.display = 'none';
-          
-          const loginBtn = document.querySelector('.login-card .btn-or');
-          if (loginBtn) { 
-            loginBtn.innerHTML = '<i class="ti ti-login"></i> Giriş Yap'; 
-            loginBtn.disabled = false; 
-          }
-          const uEl = document.getElementById('login-user');
-          const pEl = document.getElementById('login-pass');
-          if (uEl) uEl.value = '';
-          if (pEl) pEl.value = '';
-        }
+        updateAuthUI(user);
       });
+      
     } catch (error) {
-      console.error('Firebase initialization hatası:', error);
-      document.getElementById('loading-screen').style.display = 'none';
-      document.getElementById('login-screen').style.display = 'flex';
+      console.error("❌ Firebase initialization hatası:", error);
+      const loadingScreen = document.getElementById('loading-screen');
+      const loginScreen = document.getElementById('login-screen');
+      if (loadingScreen) loadingScreen.style.display = 'none';
+      if (loginScreen) loginScreen.style.display = 'flex';
     }
-  })();
+  }
+
+  function updateAuthUI(user) {
+    const loadingScreen = document.getElementById('loading-screen');
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app');
+    
+    // Loading screen gizle
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    
+    if (user) {
+      // ✅ LOGGED IN
+      console.log("✅ UI güncelleniyor: Oturum açılı");
+      if (loginScreen) loginScreen.style.display = 'none';
+      if (appContainer) appContainer.style.display = 'block';
+      
+      // Ürünleri render et
+      if (typeof renderProducts === 'function') {
+        renderProducts(window.products || []);
+      }
+      
+      // Tarih/saat güncelle
+      const d = new Date();
+      const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+      const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+      const el = document.getElementById('clock-date');
+      if (el) el.textContent = d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+', '+days[d.getDay()];
+      
+      // Kur güncelle
+      if (typeof updateRateDisplay === 'function') updateRateDisplay();
+      if (typeof fetchRates === 'function') { 
+        fetchRates(); 
+        setInterval(fetchRates, 5*60*1000); 
+      }
+    } else {
+      // ❌ LOGGED OUT
+      console.log("❌ UI güncelleniyor: Oturum kapalı");
+      if (loginScreen) loginScreen.style.display = 'flex';
+      if (appContainer) appContainer.style.display = 'none';
+      
+      // Login form'u sıfırla
+      const loginBtn = document.querySelector('.login-card .btn-or');
+      if (loginBtn) { 
+        loginBtn.innerHTML = '<i class="ti ti-login"></i> Giriş Yap'; 
+        loginBtn.disabled = false; 
+      }
+      const uEl = document.getElementById('login-user');
+      const pEl = document.getElementById('login-pass');
+      if (uEl) uEl.value = '';
+      if (pEl) pEl.value = '';
+    }
+  }
+
+  // DOM hazır olduğunda Firebase'i initialize et
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeFirebase);
+  } else {
+    initializeFirebase();
+  }
 </script>
 <style>
 :root{--or:#D45A00;--or-hover:#B84D00;--or-light:#FFF0E6;--or-dark:#8C3800;--or-border:#E89060;--or-bg:#FDF8F4;--white:#FFFFFF;--text-primary:#1C1410;--text-secondary:#6B5B4E;--text-tertiary:#9C8070;--border:#EDD8C8;--sidebar-w:210px;--font:'Figtree',sans-serif;--mono:'JetBrains Mono',monospace;--radius:10px;--radius-sm:6px}
