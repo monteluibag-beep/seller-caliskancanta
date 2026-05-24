@@ -11,7 +11,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   const firebaseConfig = {
     apiKey: "AIzaSyAJ-Fy5Qai4gAFBa55cGer8O3l8neMy2zI",
     authDomain: "caliskancanta-seller.firebaseapp.com",
@@ -23,6 +23,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
+  setPersistence(auth, browserLocalPersistence).catch(console.error);
   window.db = db;
   window.auth = auth;
   window.fbFunctions = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, signInWithEmailAndPassword, signOut, onAuthStateChanged };
@@ -48,6 +49,10 @@
       // Kullanıcı çıkış yapmış — login ekranını göster
       document.getElementById('login-screen').style.display = 'flex';
       document.getElementById('app').style.display = 'none';
+      const loginBtn = document.querySelector('.login-card .btn-or');
+      if (loginBtn) { loginBtn.innerHTML = '<i class="ti ti-login"></i> Giriş Yap'; loginBtn.disabled = false; }
+      const uEl = document.getElementById('login-user'); if (uEl) uEl.value = '';
+      const pEl = document.getElementById('login-pass'); if (pEl) pEl.value = '';
     }
   });
 </script>
@@ -836,18 +841,17 @@ document.querySelectorAll('.sidebar .nav-item').forEach(el=>{
 
 // ── GİRİŞ ───────────────────────────────
 function doLogout(){
+  closeDrawer();
   if(!window.auth||!window.fbFunctions){
+    const loginBtn=document.querySelector('.login-card .btn-or');
+    if(loginBtn){loginBtn.innerHTML='<i class="ti ti-login"></i> Giriş Yap';loginBtn.disabled=false;}
+    document.getElementById('login-user').value='';
+    document.getElementById('login-pass').value='';
     document.getElementById('app').style.display='none';
     document.getElementById('login-screen').style.display='flex';
     return;
   }
-  window.fbFunctions.signOut(window.auth).then(()=>{
-    document.getElementById('app').style.display='none';
-    document.getElementById('login-screen').style.display='flex';
-    document.getElementById('login-user').value='';
-    document.getElementById('login-pass').value='';
-    closeDrawer();
-  }).catch(()=>{
+  window.fbFunctions.signOut(window.auth).catch(()=>{
     document.getElementById('app').style.display='none';
     document.getElementById('login-screen').style.display='flex';
   });
