@@ -7,170 +7,31 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-  --or: #E85D04; --or-deep: #C44D00; --or-light: #FF7D2A;
-  --font: 'Plus Jakarta Sans', sans-serif;
-}
+:root { --or: #E85D04; --or-deep: #C44D00; --or-light: #FF7D2A; --font: 'Plus Jakarta Sans', sans-serif; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; font-family: var(--font); -webkit-font-smoothing: antialiased; }
-
-body {
-  min-height: 100vh;
-  background: #0F0A05;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Animated background */
-body::before {
-  content: '';
-  position: absolute;
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(232,93,4,.15) 0%, transparent 70%);
-  top: -200px; right: -200px;
-  animation: float1 8s ease-in-out infinite;
-}
-
-body::after {
-  content: '';
-  position: absolute;
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(255,125,42,.08) 0%, transparent 70%);
-  bottom: -100px; left: -100px;
-  animation: float2 10s ease-in-out infinite;
-}
-
-@keyframes float1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,30px)} }
-@keyframes float2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-20px)} }
-
-.login-box {
-  width: 420px;
-  position: relative;
-  z-index: 1;
-  animation: slideUp .5s ease-out;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.login-card {
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 20px;
-  padding: 40px;
-  backdrop-filter: blur(20px);
-}
-
-.login-logo {
-  text-align: center;
-  margin-bottom: 36px;
-}
-
-.logo-icon {
-  width: 64px; height: 64px;
-  background: linear-gradient(135deg, var(--or), var(--or-light));
-  border-radius: 16px;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 16px;
-  font-size: 30px; color: #fff;
-  box-shadow: 0 8px 32px rgba(232,93,4,.5);
-}
-
-.logo-name {
-  font-size: 22px; font-weight: 800;
-  color: #fff; letter-spacing: -.5px;
-}
-
-.logo-sub {
-  font-size: 12px;
-  color: rgba(255,255,255,.35);
-  margin-top: 4px;
-}
-
+body { min-height: 100vh; background: #0F0A05; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+body::before { content: ''; position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(232,93,4,.15) 0%, transparent 70%); top: -200px; right: -200px; }
+body::after { content: ''; position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(255,125,42,.08) 0%, transparent 70%); bottom: -100px; left: -100px; }
+.login-box { width: 420px; position: relative; z-index: 1; }
+.login-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 20px; padding: 40px; backdrop-filter: blur(20px); }
+.login-logo { text-align: center; margin-bottom: 36px; }
+.logo-icon { width: 64px; height: 64px; background: linear-gradient(135deg, var(--or), var(--or-light)); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 30px; color: #fff; box-shadow: 0 8px 32px rgba(232,93,4,.5); }
+.logo-name { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -.5px; }
+.logo-sub { font-size: 12px; color: rgba(255,255,255,.35); margin-top: 4px; }
 .form-group { margin-bottom: 16px; }
-
-.form-label {
-  display: block;
-  font-size: 12px; font-weight: 600;
-  color: rgba(255,255,255,.5);
-  margin-bottom: 7px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-
-.form-input {
-  width: 100%;
-  padding: 12px 14px;
-  background: rgba(255,255,255,.06);
-  border: 1.5px solid rgba(255,255,255,.1);
-  border-radius: 10px;
-  font-size: 14px;
-  font-family: var(--font);
-  color: #fff;
-  transition: all .2s;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: var(--or);
-  background: rgba(255,255,255,.08);
-  box-shadow: 0 0 0 3px rgba(232,93,4,.15);
-}
-
-.form-input::placeholder { color: rgba(255,255,255,.2); }
-
-.login-btn {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--or), var(--or-light));
-  border: none;
-  border-radius: 10px;
-  font-size: 14px; font-weight: 700;
-  font-family: var(--font);
-  color: #fff;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: all .2s;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  box-shadow: 0 4px 16px rgba(232,93,4,.4);
-}
-
-.login-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(232,93,4,.5);
-}
-
-.login-btn:disabled {
-  opacity: .6; cursor: not-allowed; transform: none;
-}
-
-.login-footer {
-  text-align: center;
-  font-size: 11px;
-  color: rgba(255,255,255,.2);
-  margin-top: 20px;
-  display: flex; align-items: center; justify-content: center; gap: 5px;
-}
-
-.error-msg {
-  background: rgba(220,38,38,.15);
-  border: 1px solid rgba(220,38,38,.3);
-  border-radius: 8px;
-  padding: 10px 12px;
-  font-size: 12px;
-  color: #FCA5A5;
-  margin-bottom: 16px;
-  display: none;
-  align-items: center; gap: 7px;
-}
-
+.form-label { display: block; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.5); margin-bottom: 7px; text-transform: uppercase; letter-spacing: .5px; }
+.form-input { width: 100%; padding: 12px 14px; background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.1); border-radius: 10px; font-size: 14px; color: #fff; }
+.form-input:focus { outline: none; border-color: var(--or); background: rgba(255,255,255,.08); box-shadow: 0 0 0 3px rgba(232,93,4,.15); }
+.login-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--or), var(--or-light)); border: none; border-radius: 10px; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(232,93,4,.4); }
+.login-btn:disabled { opacity: .6; cursor: not-allowed; }
+.login-footer { text-align: center; font-size: 11px; color: rgba(255,255,255,.2); margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.error-msg { background: rgba(220,38,38,.15); border: 1px solid rgba(220,38,38,.3); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #FCA5A5; margin-bottom: 16px; display: none; align-items: center; gap: 7px; }
 .error-msg.show { display: flex; }
 </style>
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 
@@ -189,15 +50,15 @@ body::after {
 
     <div class="form-group">
       <label class="form-label">Email</label>
-      <input class="form-input" id="email" type="email" placeholder="admin@caliskancanta.com" autocomplete="email">
+      <input class="form-input" id="email" type="email" placeholder="admin@caliskancanta.com">
     </div>
 
     <div class="form-group">
       <label class="form-label">Şifre</label>
-      <input class="form-input" id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+      <input class="form-input" id="password" type="password" placeholder="••••••••">
     </div>
 
-    <button class="login-btn" id="login-btn" onclick="doLogin()">
+    <button class="login-btn" id="login-btn">
       <i class="ti ti-login"></i> Giriş Yap
     </button>
 
@@ -208,11 +69,8 @@ body::after {
   </div>
 </div>
 
-<script type="module">
-// 1. Modüler paketler yerine tarayıcı dostu COMPAT script linklerini (CDN) kullanıyoruz (eval içermezler)
-import firebase from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js';
-import 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js';
-
+<script>
+// Firebase Konfigürasyonu
 const firebaseConfig = {
   apiKey: "AIzaSyAJ-Fy5Qai4gAFBa55cGer8O3l8neMy2zI",
   authDomain: "caliskancanta-seller.firebaseapp.com",
@@ -222,23 +80,25 @@ const firebaseConfig = {
   appId: "1:161310364502:web:47d52c38df6a3f60c6bcf7"
 };
 
-// 2. Firebase'i güvenli yöntemle başlatıyoruz
+// Başlatma
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// Zaten giriş yapılmışsa dashboard'a yönlendir (Temiz ve tekil kontrol)
+// Zaten giriş yapılmışsa direkt içeri al
 auth.onAuthStateChanged((user) => {
   if (user) window.location.href = '/dashboard.html';
 });
 
-window.doLogin = async function() {
+// Giriş Tetikleyicisi
+async function doLogin() {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
   const btn = document.getElementById('login-btn');
   const err = document.getElementById('error-msg');
+  const errText = document.getElementById('error-text');
 
   if (!email || !password) {
-    document.getElementById('error-text').textContent = 'Email ve şifre zorunludur.';
+    errText.textContent = 'Email ve şifre zorunludur.';
     err.classList.add('show');
     return;
   }
@@ -248,7 +108,6 @@ window.doLogin = async function() {
   btn.disabled = true;
 
   try {
-    // Eval hatasına neden olan modüler yapı yerine tamamen güvenli Compat (v8) istek yapısı
     await auth.signInWithEmailAndPassword(email, password);
     window.location.href = '/dashboard.html';
   } catch(e) {
@@ -258,14 +117,17 @@ window.doLogin = async function() {
     if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') msg = 'Email veya şifre hatalı.';
     if (e.code === 'auth/user-not-found') msg = 'Kullanıcı bulunamadı.';
     if (e.code === 'auth/too-many-requests') msg = 'Çok fazla deneme. Lütfen bekleyin.';
-    document.getElementById('error-text').textContent = msg;
+    errText.textContent = msg;
     err.classList.add('show');
   }
-};
+}
 
-// Enter key
+// Buton tıklandığında çalıştır (Güvenlik kilidine takılmayan modern yöntem)
+document.getElementById('login-btn').addEventListener('click', doLogin);
+
+// Enter tuşuna basıldığında çalıştır
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') window.doLogin();
+  if (e.key === 'Enter') doLogin();
 });
 </script>
 </body>
