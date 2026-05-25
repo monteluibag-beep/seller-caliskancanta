@@ -6,6 +6,10 @@
 <title>Ana Ekran — Çalışkan Çanta</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link rel="stylesheet" href="/style.css">
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -16,10 +20,9 @@
   </div>
 </div>
 
-<!-- MOBİL TOPBAR -->
 <div class="mob-topbar">
   <div style="display:flex;align-items:center;gap:10px">
-    <button class="hamburger" onclick="openDrawer()"><i class="ti ti-menu-2"></i></button>
+    <button class="hamburger" id="btn-open-drawer-mob"><i class="ti ti-menu-2"></i></button>
     <span style="font-size:14px;font-weight:700;color:#fff">Çalışkan Çanta</span>
   </div>
   <div style="display:flex;gap:10px;align-items:center">
@@ -34,46 +37,45 @@
   </div>
 </div>
 
-<!-- DRAWER OVERLAY -->
-<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer-overlay" id="drawer-overlay"></div>
 
-<!-- DRAWER -->
 <div class="drawer" id="drawer">
-  <button class="drawer-close" onclick="closeDrawer()"><i class="ti ti-x"></i></button>
+  <button class="drawer-close" id="btn-close-drawer"><i class="ti ti-x"></i></button>
   <div class="sidebar-brand" style="margin-top:4px;padding-right:40px">
     <div class="brand-logo"><i class="ti ti-briefcase"></i></div>
     <div class="brand-name">Çalışkan Çanta</div>
   </div>
   <div class="nav-group">
-    <a class="nav-item" href="/dashboard.html" data-page="dashboard" onclick="closeDrawer()"><i class="ti ti-layout-dashboard"></i> Ana Ekran</a>
-    <a class="nav-item" href="/products.html" data-page="products" onclick="closeDrawer()"><i class="ti ti-package"></i> Ürünler</a>
-    <a class="nav-item" href="/stock.html" data-page="stock" onclick="closeDrawer()"><i class="ti ti-stack"></i> Stoklar</a>
-    <a class="nav-item" href="/sales.html" data-page="sales" onclick="closeDrawer()"><i class="ti ti-receipt"></i> Satışlar</a>
-    <a class="nav-item" href="/offers.html" data-page="offers" onclick="closeDrawer()"><i class="ti ti-file-text"></i> Teklifler</a>
-    <a class="nav-item" href="/categories.html" data-page="categories" onclick="closeDrawer()"><i class="ti ti-tag"></i> Kategoriler</a>
-    <a class="nav-item" href="/users.html" data-page="users" onclick="closeDrawer()"><i class="ti ti-users"></i> Kullanıcılar</a>
-    <a class="nav-item" href="/settings.html" data-page="settings" onclick="closeDrawer()"><i class="ti ti-settings"></i> Ayarlar</a>
+    <a class="nav-item" href="/dashboard.html" data-page="dashboard"><i class="ti ti-layout-dashboard"></i> Ana Ekran</a>
+    <a class="nav-item" href="/products.html" data-page="products"><i class="ti ti-package"></i> Ürünler</a>
+    <a class="nav-item" href="/stock.html" data-page="stock"><i class="ti ti-stack"></i> Stoklar</a>
+    <a class="nav-item" href="/sales.html" data-page="sales"><i class="ti ti-receipt"></i> Satışlar</a>
+    <a class="nav-item" href="/offers.html" data-page="offers"><i class="ti ti-file-text"></i> Teklifler</a>
+    <a class="nav-item" href="/categories.html" data-page="categories"><i class="ti ti-tag"></i> Kategoriler</a>
+    <a class="nav-item" href="/users.html" data-page="users"><i class="ti ti-users"></i> Kullanıcılar</a>
+    <a class="nav-item" href="/settings.html" data-page="settings"><i class="ti ti-settings"></i> Ayarlar</a>
   </div>
   <div class="sidebar-footer" style="margin-top:auto">
     <div class="user-card">
-      <div class="user-av" id="user-av">—</div>
-      <div class="user-info"><div class="user-name" id="user-name">—</div><div class="user-role" id="user-email"></div></div>
-      <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout"></i></button>
+      <div class="user-av" id="user-av-drawer">—</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name-drawer">Yönetici</div>
+        <div class="user-role" id="user-email-drawer"></div>
+      </div>
+      <button class="logout-btn btn-logout-trigger"><i class="ti ti-logout"></i></button>
     </div>
   </div>
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <a class="bnav" href="/dashboard.html" data-page="dashboard"><i class="ti ti-layout-dashboard"></i>Ana</a>
   <a class="bnav" href="/products.html" data-page="products"><i class="ti ti-package"></i>Ürünler</a>
   <a class="bnav" href="/offers.html" data-page="offers"><i class="ti ti-file-text"></i>Teklifler</a>
   <a class="bnav" href="/sales.html" data-page="sales"><i class="ti ti-receipt"></i>Satışlar</a>
-  <button class="bnav" onclick="openDrawer()"><i class="ti ti-dots"></i>Daha</button>
+  <button class="bnav" id="btn-open-drawer-bottom"><i class="ti ti-dots"></i>Daha</button>
 </div>
 
 <div class="app-layout">
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-logo"><i class="ti ti-briefcase"></i></div>
@@ -105,9 +107,12 @@
     </div>
     <div class="sidebar-footer">
       <div class="user-card">
-        <div class="user-av" id="user-av">—</div>
-        <div class="user-info"><div class="user-name" id="user-name">—</div><div class="user-role" id="user-email"></div></div>
-        <button class="logout-btn" onclick="doLogout()" title="Çıkış"><i class="ti ti-logout"></i></button>
+        <div class="user-av" id="user-av-sidebar">—</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name-sidebar">Yönetici</div>
+          <div class="user-role" id="user-email-sidebar"></div>
+        </div>
+        <button class="logout-btn btn-logout-trigger" title="Çıkış"><i class="ti ti-logout"></i></button>
       </div>
     </div>
   </aside>
@@ -127,7 +132,6 @@
     </div>
 
     <div class="page-content">
-      <!-- STATS -->
       <div class="stats-grid">
         <div class="stat-card accent-orange">
           <div class="stat-icon orange"><i class="ti ti-stack"></i></div>
@@ -156,7 +160,6 @@
       </div>
 
       <div class="grid-2">
-        <!-- Son Satışlar -->
         <div class="card">
           <div class="card-header">
             <div class="card-title">Son Satışlar</div>
@@ -173,7 +176,6 @@
           </table></div>
         </div>
 
-        <!-- Stok Uyarıları -->
         <div class="card">
           <div class="card-header">
             <div class="card-title">Stok Uyarıları</div>
@@ -193,16 +195,6 @@
   </div>
 </div>
 
-<script type="module">
-import { initPage } from '/_common.js';
-
-initPage('dashboard', (user) => {
-  const d = new Date();
-  const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
-  const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-  const el = document.getElementById('today-date');
-  if(el) el.textContent = d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+', '+days[d.getDay()];
-});
-</script>
+<script type="module" src="/dashboard.js"></script>
 </body>
 </html>
