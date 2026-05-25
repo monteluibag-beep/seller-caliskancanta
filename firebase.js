@@ -45,19 +45,9 @@ export function requireAuth(callback) {
     callback(currentUser);
     console.log("✅ User already authenticated:", currentUser.email);
   } else {
-    // Login'i bekle (max 2 saniye)
-    let authenticated = false;
-    const timeout = setTimeout(() => {
-      if (!authenticated && !currentUser) {
-        console.log("❌ Auth timeout, redirecting to login");
-        window.location.href = '/index.html';
-      }
-    }, 2000);
-
+    // Login'i bekle (callback'i çalıştırmadan yapılacak yok)
     const unsub = onAuthStateChanged(auth, (user) => {
-      if (user && !authenticated) {
-        authenticated = true;
-        clearTimeout(timeout);
+      if (user) {
         unsub();
         callback(user);
         console.log("✅ User authenticated:", user.email);
