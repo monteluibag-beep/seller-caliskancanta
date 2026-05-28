@@ -74,7 +74,7 @@ html, body {
 .sidebar {
   width: var(--sidebar-w);
   flex-shrink: 0;
-  background: var(--text-1);
+  background: #1E1206;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
@@ -118,7 +118,7 @@ html, body {
 
 .brand-url {
   font-size: 10px;
-  color: rgba(255,255,255,.35);
+  color: rgba(255,255,255,.55);
   margin-top: 2px;
 }
 
@@ -129,7 +129,7 @@ html, body {
 .nav-label {
   font-size: 9px;
   font-weight: 700;
-  color: rgba(255,255,255,.25);
+  color: rgba(255,255,255,.45);
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 0 8px;
@@ -142,7 +142,7 @@ html, body {
   gap: 10px;
   padding: 9px 10px;
   border-radius: var(--radius-sm);
-  color: rgba(255,255,255,.5);
+  color: rgba(255,255,255,.75);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -152,8 +152,8 @@ html, body {
 }
 
 .nav-item:hover {
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.10);
+  color: #fff;
 }
 
 .nav-item.active {
@@ -203,7 +203,7 @@ html, body {
 
 .user-info { flex: 1; min-width: 0; }
 .user-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.user-role { font-size: 10px; color: rgba(255,255,255,.35); }
+.user-role { font-size: 10px; color: rgba(255,255,255,.55); }
 
 .logout-btn {
   width: 28px;
@@ -212,7 +212,7 @@ html, body {
   background: rgba(255,255,255,.06);
   border: none;
   cursor: pointer;
-  color: rgba(255,255,255,.4);
+  color: rgba(255,255,255,.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -226,7 +226,8 @@ html, body {
 /* ── RATES BAR ── */
 .rates-bar {
   padding: 12px 14px;
-  border-top: 1px solid rgba(255,255,255,.06);
+  border-top: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.15);
 }
 
 .rate-row {
@@ -236,8 +237,8 @@ html, body {
   padding: 3px 0;
 }
 
-.rate-label { font-size: 10px; color: rgba(255,255,255,.35); display: flex; align-items: center; gap: 5px; }
-.rate-val { font-family: var(--mono); font-size: 11px; font-weight: 500; color: rgba(255,255,255,.7); }
+.rate-label { font-size: 10px; color: rgba(255,255,255,.6); display: flex; align-items: center; gap: 5px; }
+.rate-val { font-family: var(--mono); font-size: 11px; font-weight: 600; color: rgba(255,255,255,.9); }
 .rate-chg { font-size: 9px; }
 .up { color: #4ADE80; }
 .dn { color: #F87171; }
@@ -292,13 +293,14 @@ html, body {
   background: var(--surface);
   color: var(--text-1);
   cursor: pointer;
-  transition: all .15s;
+  transition: all .2s;
   font-family: var(--font);
   text-decoration: none;
   white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
 }
 
-.btn:hover { background: var(--or-tint); border-color: var(--or-muted); color: var(--or-deep); }
+.btn:hover { background: var(--or-tint); border-color: var(--or-muted); color: var(--or-deep); box-shadow: 0 4px 10px rgba(0,0,0,.10); transform: translateY(-1px); }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--or), var(--or-light));
@@ -310,8 +312,8 @@ html, body {
 .btn-primary:hover {
   background: linear-gradient(135deg, var(--or-deep), var(--or));
   color: #fff;
-  box-shadow: 0 4px 12px rgba(232,93,4,.4);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(232,93,4,.45);
+  transform: translateY(-2px);
 }
 
 .btn-sm { padding: 6px 12px; font-size: 12px; }
