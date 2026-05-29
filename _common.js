@@ -43,6 +43,9 @@ export function initPage(pageName, callback) {
     if (callback) callback(user);
     fetchRates();
     setInterval(fetchRates, 5 * 60 * 1000);
+
+    // Hamburger sidebar
+    initSidebarCollapse();
   });
 }
 
@@ -62,6 +65,58 @@ window.closeDrawer = function() {
   document.getElementById('drawer-overlay')?.classList.remove('open');
   document.body.style.overflow = '';
 };
+
+// ── HAMBURGER SIDEBAR COLLAPSE ──
+function initSidebarCollapse() {
+  const sidebar = document.querySelector('aside.sidebar');
+  if (!sidebar) return;
+
+  // 1. sidebar-brand içini yeniden düzenle
+  const brand = sidebar.querySelector('.sidebar-brand');
+  if (brand) {
+    // Mevcut içeriği brand-info'ya taşı
+    const existingHTML = brand.innerHTML;
+    brand.innerHTML = `
+      <div class="brand-info">${existingHTML}</div>
+      <button class="sidebar-toggle" id="sidebar-toggle" title="Daralt / Genişlet">
+        <i class="ti ti-chevrons-left"></i>
+      </button>`;
+  }
+
+  // 2. Nav item'lardaki metin node'larını span.nav-text'e al + data-label ekle
+  sidebar.querySelectorAll('.nav-item[data-page]').forEach(item => {
+    // İkon dışındaki text node'u bul
+    item.childNodes.forEach(node => {
+      if (node.nodeType === 3 && node.textContent.trim()) {
+        const label = node.textContent.trim();
+        item.setAttribute('data-label', label);
+        const span = document.createElement('span');
+        span.className = 'nav-text';
+        span.textContent = label;
+        node.replaceWith(span);
+      }
+    });
+    // Varsa zaten span içindeyse data-label ekle
+    if (!item.dataset.label) {
+      const txt = item.querySelector('span, .nav-text');
+      if (txt) item.setAttribute('data-label', txt.textContent.trim());
+    }
+  });
+
+  // 3. Toggle butonu
+  const btn = document.getElementById('sidebar-toggle');
+  if (!btn) return;
+
+  // Kayıtlı durum
+  if (localStorage.getItem('sb-collapsed') === '1') {
+    sidebar.classList.add('collapsed');
+  }
+
+  btn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    localStorage.setItem('sb-collapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+  });
+}
 
 // Döviz kurları
 let rates = { USD:38.45, EUR:41.82, GBP:48.90 };
