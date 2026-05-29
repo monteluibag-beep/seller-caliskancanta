@@ -60,11 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('click', closeDrawer);
     });
 
-    // Güvenli çıkış yapma olayı
-    document.querySelectorAll('.btn-logout-trigger').forEach(btn => {
+    // Güvenli çıkış yapma olayı — hem class hem data-action
+    document.querySelectorAll('.btn-logout-trigger, [data-action="doLogout"]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            logout();
+            e.stopPropagation();
+            logout().catch(() => { window.location.href = '/index.html'; });
         });
     });
 });
