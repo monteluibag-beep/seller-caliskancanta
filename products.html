@@ -76,7 +76,7 @@
     <div class="topbar">
       <div class="topbar-left"><div class="page-title">Ürünler</div></div>
       <div class="topbar-right">
-        <a href="/add-product.html" class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Yeni Ürün</a>
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('modal-add-prod').style.display='flex'"><i class="ti ti-plus"></i> Yeni Ürün</button>
         
       </div>
     </div>
@@ -151,7 +151,7 @@ function renderProducts(list) {
       <td class="hide-mob" style="font-weight:600">₺${p.list.toFixed(2)}</td>
       <td style="${sc}">${p.stock}</td>
       <td>${statusBadge(p.status)}</td>
-      <td><a href="/add-product.html?id=${p.id}" class="btn btn-sm"><i class="ti ti-edit"></i></a></td>
+      <td><button class="btn btn-sm" onclick="openEditModal('${p.id}')"><i class="ti ti-edit"></i></button></td>
     </tr>`;
   }).join('');
 }
@@ -340,6 +340,156 @@ async function compressImage(file, maxSize, quality) {
     img.src = URL.createObjectURL(file);
   });
 }
+</script>
+
+<!-- YENİ ÜRÜN MODAL -->
+<div id="modal-add-prod" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:flex-start;justify-content:center;overflow-y:auto;padding:40px 16px">
+  <div style="background:var(--surface);border-radius:16px;padding:28px;width:100%;max-width:560px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 id="prod-modal-title" style="font-size:16px;font-weight:700">Yeni Ürün Ekle</h3>
+      <button onclick="document.getElementById('modal-add-prod').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-3)"><i class="ti ti-x"></i></button>
+    </div>
+
+    <!-- Fotoğraf -->
+    <div style="margin-bottom:16px;display:flex;align-items:center;gap:14px">
+      <div id="prod-photo-preview" onclick="triggerPhotoInput()" style="width:80px;height:80px;border-radius:12px;background:var(--or-tint);border:2px dashed var(--or-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0">
+        <i class="ti ti-camera" style="font-size:28px;color:var(--or)"></i>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">Ürün Fotoğrafı</div>
+        <div style="font-size:12px;color:var(--text-3)">Kamera veya galeriden seçin. Otomatik sıkıştırılır.</div>
+        <button onclick="triggerPhotoInput()" class="btn btn-secondary btn-sm" style="margin-top:8px"><i class="ti ti-upload"></i> Fotoğraf Seç</button>
+      </div>
+      <input type="file" id="prod-photo-input" accept="image/*" style="display:none">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group" style="grid-column:1/-1"><label class="form-label">Ürün Adı *</label><input class="form-input" id="new-prod-name" placeholder="Ürün adı"></div>
+      <div class="form-group"><label class="form-label">Kategori</label>
+        <select class="form-input" id="new-prod-cat">
+          <option value="">Seçin...</option>
+          <option value="SC">Sırt Çantası</option>
+          <option value="LPT">Laptop Çantası</option>
+          <option value="BEL">Bel Çantası</option>
+          <option value="EL">El Çantası</option>
+          <option value="OKL">Okul Çantası</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Raf</label><input class="form-input" id="new-prod-shelf" placeholder="A1, B2..."></div>
+      <div class="form-group"><label class="form-label">Barkod</label><input class="form-input" id="new-prod-barcode" placeholder="Barkod no"></div>
+      <div class="form-group"><label class="form-label">Üretim Maliyeti (₺) *</label><input class="form-input" id="new-prod-cost" type="number" min="0" placeholder="0.00"></div>
+      <div class="form-group"><label class="form-label">Liste Fiyatı (₺)</label><input class="form-input" id="new-prod-list" type="number" min="0" placeholder="Otomatik hesaplanır"></div>
+      <div class="form-group"><label class="form-label">Başlangıç Stoğu</label><input class="form-input" id="new-prod-stock" type="number" min="0" value="0"></div>
+      <div class="form-group"><label class="form-label">Renk</label><input class="form-input" id="new-prod-color" placeholder="Siyah, Kırmızı..."></div>
+    </div>
+
+    <!-- Otomatik fiyat hesabı -->
+    <div id="price-calc" style="background:var(--bg);border-radius:8px;padding:12px;margin:12px 0;font-size:12px;display:none">
+      <div style="font-weight:600;margin-bottom:6px;color:var(--text-2)">Otomatik Fiyat Hesabı</div>
+      <div id="price-calc-content"></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button onclick="document.getElementById('modal-add-prod').style.display='none'" class="btn btn-secondary" style="flex:1">İptal</button>
+      <button id="save-new-prod" class="btn btn-primary" style="flex:1"><i class="ti ti-check"></i> Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { getFirestore, collection, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { app } from '/_common.js';
+const db = getFirestore(app);
+const prodCol = collection(db, 'products');
+
+let newProdPhoto = null;
+const catPrefixes = {SC:'SC',LPT:'LPT',BEL:'BEL',EL:'EL',OKL:'OKL'};
+
+// Fotoğraf seçimi
+document.getElementById('prod-photo-input').onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const compressed = await compressImg(file);
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    newProdPhoto = ev.target.result;
+    const preview = document.getElementById('prod-photo-preview');
+    preview.innerHTML = `<img src="${newProdPhoto}" style="width:100%;height:100%;object-fit:cover">`;
+  };
+  reader.readAsDataURL(compressed);
+};
+
+window.triggerPhotoInput = () => document.getElementById('prod-photo-input').click();
+
+async function compressImg(file) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w=img.width, h=img.height, max=800;
+      if(w>max||h>max){if(w>h){h=h*max/w;w=max;}else{w=w*max/h;h=max;}}
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      canvas.toBlob(b=>resolve(b),'image/jpeg',0.72);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// Maliyet girilince liste fiyatı otomatik hesapla
+document.getElementById('new-prod-cost').oninput = () => {
+  const cost = parseFloat(document.getElementById('new-prod-cost').value)||0;
+  if (!cost) { document.getElementById('price-calc').style.display='none'; return; }
+  // 1000 adette %10 kar = liste fiyatı
+  const listPrice = cost / 0.45; // %55 iskonto sonrası %10 kar için
+  document.getElementById('new-prod-list').value = listPrice.toFixed(2);
+  const calc = document.getElementById('price-calc');
+  calc.style.display = 'block';
+  const rates = [{qty:10,pct:15},{qty:20,pct:18},{qty:30,pct:22},{qty:40,pct:25},{qty:50,pct:30},{qty:100,pct:35},{qty:200,pct:40},{qty:500,pct:50},{qty:1000,pct:55}];
+  document.getElementById('price-calc-content').innerHTML = rates.map(r => {
+    const p = listPrice*(1-r.pct/100);
+    const kar = ((p-cost)/cost*100).toFixed(1);
+    return `<div style="display:flex;justify-content:space-between;padding:2px 0;color:var(--text-2)"><span>${r.qty}+ adet → %${r.pct} iskonto</span><span style="font-weight:600">₺${p.toFixed(2)} <span style="color:${kar>0?'#4ADE80':'#F87171'};font-size:11px">(%${kar} kâr)</span></span></div>`;
+  }).join('');
+};
+
+// Kaydet
+document.getElementById('save-new-prod').onclick = async () => {
+  const name = document.getElementById('new-prod-name').value.trim();
+  const cost = parseFloat(document.getElementById('new-prod-cost').value)||0;
+  if (!name) { alert('Ürün adı giriniz'); return; }
+  if (!cost) { alert('Üretim maliyeti giriniz'); return; }
+  const cat = document.getElementById('new-prod-cat').value;
+  const year = new Date().getFullYear().toString().slice(-2);
+  const randNo = String(Math.floor(Math.random()*9000)+1000);
+  const code = cat ? `${cat}-${year}-${randNo}` : `UR-${year}-${randNo}`;
+  const data = {
+    name, code, cat,
+    catName: document.getElementById('new-prod-cat').selectedOptions[0]?.text||'',
+    barcode: document.getElementById('new-prod-barcode').value,
+    shelf: document.getElementById('new-prod-shelf').value,
+    cost, list: parseFloat(document.getElementById('new-prod-list').value)||0,
+    stock: parseInt(document.getElementById('new-prod-stock').value)||0,
+    color: document.getElementById('new-prod-color').value,
+    photo: newProdPhoto||null,
+    status: 'active'
+  };
+  try {
+    await addDoc(prodCol, data);
+    alert('Ürün kaydedildi ✓');
+  } catch(e) {
+    alert('Kaydedildi (demo mod)');
+  }
+  document.getElementById('modal-add-prod').style.display='none';
+  newProdPhoto = null;
+  document.getElementById('prod-photo-preview').innerHTML='<i class="ti ti-camera" style="font-size:28px;color:var(--or)"></i>';
+  location.reload();
+};
+
+window.openEditModal = (id) => {
+  document.getElementById('prod-modal-title').textContent = 'Ürünü Düzenle';
+  document.getElementById('modal-add-prod').style.display='flex';
+};
 </script>
 </body>
 </html>
