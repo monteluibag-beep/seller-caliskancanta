@@ -97,13 +97,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Hamburger
-document.addEventListener("DOMContentLoaded", function() {
+// Sidebar collapse toggle
+(function() {
   var s = document.querySelector(".sidebar");
   if (!s) return;
-  var b = document.querySelector("aside.sidebar .sidebar-brand") || document.querySelector(".sidebar .sidebar-brand");
-  if (b) {
-    b.innerHTML = '<div class="brand-info">' + b.innerHTML + '</div><button class="sidebar-toggle" id="sidebar-toggle"><svg width="18" height="14" viewBox="0 0 18 14" fill="none"><rect x="0" y="0" width="18" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="12" width="10" height="2" rx="1" fill="currentColor"/></svg></button>';
-  }
   var btn = document.getElementById("sidebar-toggle");
   if (!btn) return;
   if (localStorage.getItem("sb-collapsed") === "1") s.classList.add("collapsed");
@@ -111,4 +108,4 @@ document.addEventListener("DOMContentLoaded", function() {
     s.classList.toggle("collapsed");
     localStorage.setItem("sb-collapsed", s.classList.contains("collapsed") ? "1" : "0");
   });
-});
+})();
