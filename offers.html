@@ -98,78 +98,82 @@
   </div>
 </div>
 
-<!-- Teklif Formu -->
+
 <div id="form-view" style="display:none">
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
     <button class="btn btn-secondary" id="btn-back"><i class="ti ti-arrow-left"></i> Geri</button>
     <h2 style="font-size:18px;font-weight:700">Yeni Teklif</h2>
-    <span id="offer-no" style="font-size:13px;color:var(--text-3);margin-left:auto"></span>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-    <div class="card">
-      <div style="padding:20px">
-        <h3 style="font-size:13px;font-weight:700;margin-bottom:14px;color:var(--text-2)">MÜŞTERİ BİLGİLERİ</h3>
-        <div class="form-group"><label class="form-label">Müşteri / Firma *</label><input class="form-input" id="o-customer" placeholder="Firma adı"></div>
-        <div class="form-group"><label class="form-label">İletişim Kişisi</label><input class="form-input" id="o-contact" placeholder="Ad Soyad"></div>
-        <div class="form-group"><label class="form-label">Teklif Tarihi</label><input class="form-input" id="o-date" type="date"></div>
-        <div class="form-group"><label class="form-label">Geçerlilik</label>
-          <select class="form-input" id="o-validity"><option value="15">15 gün</option><option value="30" selected>30 gün</option><option value="45">45 gün</option><option value="60">60 gün</option></select>
-        </div>
-        <div class="form-group"><label class="form-label">Not</label><textarea class="form-input" id="o-note" rows="2" placeholder="Opsiyonel not"></textarea></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="padding:20px">
-        <h3 style="font-size:13px;font-weight:700;margin-bottom:14px;color:var(--text-2)">ÜRÜN EKLE</h3>
-        <div class="form-group"><label class="form-label">Ürün Adı / Kodu</label><input class="form-input" id="o-prod-name" placeholder="Ürün ara..."></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="form-group"><label class="form-label">Adet</label><input class="form-input" id="o-prod-qty" type="number" value="1" min="1"></div>
-          <div class="form-group"><label class="form-label">Birim Fiyat (₺)</label><input class="form-input" id="o-prod-price" type="number" value="0" min="0"></div>
-        </div>
-        <div class="form-group"><label class="form-label">İskonto (%)</label>
-          <select class="form-input" id="o-prod-disc">
-            <option value="0">İskonto yok</option>
-            <option value="15">10+ adet → %15</option>
-            <option value="18">20+ adet → %18</option>
-            <option value="22">30+ adet → %22</option>
-            <option value="25">40+ adet → %25</option>
-            <option value="30">50+ adet → %30</option>
-            <option value="35">100+ adet → %35</option>
-            <option value="40">200+ adet → %40</option>
-            <option value="50">500+ adet → %50</option>
-            <option value="55">1000+ adet → %55</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" id="btn-add-item" style="width:100%"><i class="ti ti-plus"></i> Ürünü Ekle</button>
-      </div>
+    <span id="offer-no" style="font-size:13px;color:var(--text-3)"></span>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-secondary" id="btn-preview"><i class="ti ti-eye"></i> Önizle</button>
+      <button class="btn btn-primary" id="btn-save-offer"><i class="ti ti-device-floppy"></i> Kaydet</button>
     </div>
   </div>
 
-  <!-- Ürün Listesi -->
-  <div class="card" style="margin-bottom:16px">
-    <div class="card-header"><div class="card-title">Teklif Kalemleri</div></div>
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th>#</th><th>Ürün</th><th>Adet</th><th>Birim Fiyat</th><th>İskonto</th><th>Toplam</th><th></th></tr></thead>
-        <tbody id="offer-items-tbody"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text-3)">Henüz ürün eklenmedi</td></tr></tbody>
-      </table>
+  <div style="display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start">
+
+    <!-- Sol: Müşteri + Ürün Arama -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <!-- Müşteri Bilgileri -->
+      <div class="card">
+        <div style="padding:16px 18px">
+          <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Müşteri Bilgileri</div>
+          <div class="form-group"><label class="form-label">Müşteri / Firma *</label><input class="form-input" id="o-customer" placeholder="Firma adı"></div>
+          <div class="form-group"><label class="form-label">İletişim Kişisi</label><input class="form-input" id="o-contact" placeholder="Ad Soyad"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="form-group"><label class="form-label">Tarih</label><input class="form-input" id="o-date" type="date"></div>
+            <div class="form-group"><label class="form-label">Geçerlilik</label>
+              <select class="form-input" id="o-validity"><option value="15">15 gün</option><option value="30" selected>30 gün</option><option value="45">45 gün</option><option value="60">60 gün</option></select>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Not</label><textarea class="form-input" id="o-note" rows="2" placeholder="Opsiyonel not" style="resize:none"></textarea></div>
+        </div>
+      </div>
+
+      <!-- Ürün Arama -->
+      <div class="card">
+        <div style="padding:16px 18px">
+          <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">Ürün Ara & Ekle</div>
+          <div style="position:relative">
+            <div style="position:relative">
+              <i class="ti ti-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:16px"></i>
+              <input class="form-input" id="o-search" placeholder="Ürün adı, kod veya barkod..." style="padding-left:34px;padding-right:36px" autocomplete="off">
+              <button onclick="openBarcodeCamera('o-search')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-3);font-size:18px" title="Barkod Okut"><i class="ti ti-camera"></i></button>
+            </div>
+            <!-- Arama Sonuçları Dropdown -->
+            <div id="o-search-results" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.12);z-index:200;max-height:380px;overflow-y:auto"></div>
+          </div>
+          <div style="margin-top:10px;font-size:12px;color:var(--text-3)">Ürüne tıklayarak teklif listesine ekleyin. Adet ve fiyatlar otomatik hesaplanır.</div>
+        </div>
+      </div>
+
     </div>
-    <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;align-items:center;gap:20px">
-      <div style="text-align:right">
-        <div style="font-size:12px;color:var(--text-3)">Ara Toplam</div>
-        <div style="font-size:20px;font-weight:700;color:var(--or)" id="o-subtotal">₺0,00</div>
+
+    <!-- Sağ: Teklif Kalemleri -->
+    <div class="card" style="position:sticky;top:80px">
+      <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px">Teklif Kalemleri</div>
+        <span id="offer-item-count" style="font-size:12px;color:var(--text-3)">0 ürün</span>
+      </div>
+
+      <!-- Kalemler listesi -->
+      <div id="offer-items-list" style="min-height:120px;max-height:420px;overflow-y:auto"></div>
+
+      <!-- Toplam -->
+      <div style="padding:16px 18px;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--text-2)"><span>Ara Toplam</span><span id="o-subtotal-val">₺0,00</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--text-2)"><span>KDV (%20)</span><span id="o-kdv-val">₺0,00</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:var(--or);padding-top:8px;border-top:1px solid var(--border)"><span>Genel Toplam</span><span id="o-total-val">₺0,00</span></div>
+      </div>
+
+      <!-- Gönder butonları -->
+      <div style="padding:0 18px 16px;display:flex;gap:8px">
+        <button class="btn btn-secondary" id="btn-whatsapp" style="flex:1;justify-content:center"><i class="ti ti-brand-whatsapp"></i> WA</button>
+        <button class="btn btn-secondary" id="btn-email" style="flex:1;justify-content:center"><i class="ti ti-mail"></i> Mail</button>
       </div>
     </div>
-  </div>
 
-  <!-- Aksiyon Butonları -->
-  <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <button class="btn btn-secondary" id="btn-preview"><i class="ti ti-eye"></i> PDF Önizle</button>
-    <button class="btn btn-primary" id="btn-save-offer"><i class="ti ti-device-floppy"></i> Kaydet</button>
-    <button class="btn btn-secondary" id="btn-whatsapp"><i class="ti ti-brand-whatsapp"></i> WhatsApp</button>
-    <button class="btn btn-secondary" id="btn-email"><i class="ti ti-mail"></i> E-posta</button>
   </div>
 </div>
 
@@ -194,17 +198,39 @@ import { app } from '/_common.js';
 
 initPage('offers', (user) => {
   const db = getFirestore(app);
-  const col = collection(db, 'offers');
-  let allOffers = [], offerItems = [], offerNo = '';
+  const offersCol = collection(db, 'offers');
+  const productsCol = collection(db, 'products');
+  let allOffers = [], allProducts = [], offerItems = [], offerNo = '';
+  let currentUser = user;
 
-  // Tarih bugün
-  document.getElementById('o-date').value = new Date().toISOString().split('T')[0];
-  offerNo = '#TKF-' + String(Math.floor(Math.random()*900)+100);
-  document.getElementById('offer-no').textContent = offerNo;
+  const discRates = [{qty:1000,pct:55},{qty:500,pct:50},{qty:200,pct:40},{qty:100,pct:35},{qty:50,pct:30},{qty:40,pct:25},{qty:30,pct:22},{qty:20,pct:18},{qty:10,pct:15}];
 
+  function getDiscount(qty) {
+    const r = discRates.find(r => qty >= r.qty);
+    return r ? r.pct : 0;
+  }
+
+  // Ürünleri yükle
+  async function loadProducts() {
+    try {
+      const snap = await getDocs(productsCol);
+      allProducts = snap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e) {
+      allProducts = [
+        {id:'1',code:'SC-26-0001-M-BLK',barcode:'8690100000017',name:'Sırt Çantası M Siyah',catName:'Sırt Çantası',cost:85,list:125,stock:240,photo:null},
+        {id:'2',code:'LPT-26-0001-STD-BLK',barcode:'8690600000014',name:'Laptop Çantası 15"',catName:'Laptop Çantası',cost:150,list:230,stock:52,photo:null},
+        {id:'3',code:'BEL-26-0001-S-BLK',barcode:'8690200000013',name:'Bel Çantası S Siyah',catName:'Bel Çantası',cost:45,list:68,stock:3,photo:null},
+        {id:'4',code:'EL-26-0001-STD-RED',barcode:'8690300000019',name:'El Çantası Mini Kırmızı',catName:'El Çantası',cost:38,list:58,stock:7,photo:null},
+        {id:'5',code:'OKL-26-0001-L-BLU',barcode:'8690500000011',name:'Okul Çantası L Mavi',catName:'Okul Çantası',cost:70,list:108,stock:118,photo:null},
+        {id:'6',code:'SC-26-0002-L-BRN',barcode:'8690100000024',name:'Sırt Çantası L Kahve',catName:'Sırt Çantası',cost:95,list:145,stock:88,photo:null},
+      ];
+    }
+  }
+
+  // Teklif listesini yükle
   async function loadOffers() {
     try {
-      const snap = await getDocs(query(col, orderBy('date','desc')));
+      const snap = await getDocs(query(offersCol, orderBy('date','desc')));
       allOffers = snap.docs.map(d=>({id:d.id,...d.data()}));
     } catch(e) {
       allOffers = [
@@ -216,16 +242,16 @@ initPage('offers', (user) => {
   }
 
   function renderList() {
-    const b = {approved:"<span style='color:#4ADE80;font-weight:600;font-size:12px'>✓ Onaylandı</span>",pending:"<span style='color:#FBB724;font-weight:600;font-size:12px'>⏳ Beklemede</span>",rejected:"<span style='color:#F87171;font-weight:600;font-size:12px'>✗ Reddedildi</span>"};
+    const b = {approved:"<span style='color:#4ADE80;font-weight:600;font-size:12px'>✓ Onaylandı</span>",pending:"<span style='color:#FBB724;font-weight:600;font-size:12px'>⏳ Beklemede</span>"};
     document.getElementById('offers-tbody').innerHTML = allOffers.length
       ? allOffers.map(o=>`<tr>
           <td><strong>${o.no||'—'}</strong></td>
           <td>${o.customer||'—'}</td>
-          <td>${o.by||user.email.split('@')[0]}</td>
+          <td>${o.by||'—'}</td>
           <td>${o.date?.toDate?o.date.toDate().toLocaleDateString('tr-TR'):'—'}</td>
           <td style="font-weight:600">₺${(o.total||0).toLocaleString('tr-TR')}</td>
           <td>${b[o.status]||b.pending}</td>
-          <td><button style="background:none;border:none;cursor:pointer;color:var(--or)" onclick=""><i class="ti ti-eye"></i></button></td>
+          <td><button style="background:none;border:none;cursor:pointer;color:var(--or)"><i class="ti ti-eye"></i></button></td>
         </tr>`).join('')
       : "<tr><td colspan='7' style='text-align:center;padding:30px;color:var(--text-3)'>Teklif yok</td></tr>";
   }
@@ -237,50 +263,135 @@ initPage('offers', (user) => {
     document.getElementById('o-revenue').textContent = '₺'+allOffers.reduce((a,o)=>a+(o.total||0),0).toLocaleString('tr-TR');
   }
 
-  function renderItems() {
-    document.getElementById('offer-items-tbody').innerHTML = offerItems.length
-      ? offerItems.map((it,i)=>`<tr>
-          <td>${i+1}</td>
-          <td>${it.name}</td>
-          <td>${it.qty}</td>
-          <td>₺${it.price.toLocaleString('tr-TR')}</td>
-          <td>%${it.disc}</td>
-          <td style="font-weight:600">₺${it.total.toLocaleString('tr-TR')}</td>
-          <td><button onclick="removeItem(${i})" style="background:none;border:none;cursor:pointer;color:#F87171"><i class="ti ti-trash"></i></button></td>
-        </tr>`).join('')
-      : "<tr><td colspan='7' style='text-align:center;padding:20px;color:var(--text-3)'>Henüz ürün eklenmedi</td></tr>";
-    const sub = offerItems.reduce((a,it)=>a+it.total,0);
-    document.getElementById('o-subtotal').textContent = '₺'+sub.toLocaleString('tr-TR',{minimumFractionDigits:2});
-  }
+  // Ürün arama
+  const searchInput = document.getElementById('o-search');
+  const resultsDiv = document.getElementById('o-search-results');
 
-  window.removeItem = (i) => { offerItems.splice(i,1); renderItems(); };
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) { resultsDiv.style.display='none'; return; }
+    const matches = allProducts.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.code||'').toLowerCase().includes(q) ||
+      (p.barcode||'').includes(q)
+    ).slice(0, 8);
+    if (!matches.length) { resultsDiv.style.display='none'; return; }
+    resultsDiv.innerHTML = matches.map(p => {
+      const disc = getDiscount(1);
+      const price = p.list || 0;
+      const img = p.photo ? `<img src="${p.photo}" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0">` : `<div style="width:52px;height:52px;border-radius:8px;background:var(--or-tint);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">🎒</div>`;
+      return `<div class="prod-result-item" data-id="${p.id}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s" 
+        onmouseover="this.style.background='var(--or-tint)'" onmouseout="this.style.background=''"
+        onclick="addProductToOffer('${p.id}')">
+        ${img}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.name}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px">${p.code||''} · ${p.catName||''}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <span style="font-size:13px;font-weight:700;color:var(--or)">₺${price.toFixed(2)}</span>
+            <span style="font-size:11px;color:var(--text-3)">Stok: ${p.stock||0}</span>
+          </div>
+        </div>
+        <div style="flex-shrink:0">
+          <div style="background:var(--or);color:#fff;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600">Ekle</div>
+        </div>
+      </div>`;
+    }).join('');
+    resultsDiv.style.display = 'block';
+  });
 
-  // Ürün ekle
-  document.getElementById('btn-add-item').onclick = () => {
-    const name = document.getElementById('o-prod-name').value.trim();
-    const qty = parseInt(document.getElementById('o-prod-qty').value)||1;
-    const price = parseFloat(document.getElementById('o-prod-price').value)||0;
-    const disc = parseFloat(document.getElementById('o-prod-disc').value)||0;
-    if (!name) { alert('Ürün adı giriniz'); return; }
-    const total = price * qty * (1 - disc/100);
-    offerItems.push({name,qty,price,disc,total});
-    renderItems();
-    document.getElementById('o-prod-name').value='';
-    document.getElementById('o-prod-qty').value=1;
-    document.getElementById('o-prod-price').value=0;
-    document.getElementById('o-prod-disc').value=0;
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#o-search') && !e.target.closest('#o-search-results')) {
+      resultsDiv.style.display = 'none';
+    }
+  });
+
+  window.addProductToOffer = (productId) => {
+    const p = allProducts.find(p=>p.id===productId||p.id==productId);
+    if (!p) return;
+    const existing = offerItems.find(it=>it.id===productId);
+    if (existing) {
+      existing.qty++;
+      existing.disc = getDiscount(existing.qty);
+      existing.total = existing.price * existing.qty * (1 - existing.disc/100);
+    } else {
+      const disc = getDiscount(1);
+      const price = p.list || 0;
+      offerItems.push({id:productId, name:p.name, code:p.code, photo:p.photo||null, price, qty:1, disc, total:price*(1-disc/100)});
+    }
+    resultsDiv.style.display = 'none';
+    searchInput.value = '';
+    renderItems(); updateTotals();
   };
 
-  // Görünüm değiştirme
-  const show = (id) => { ['list-view','form-view','pdf-view'].forEach(v=>document.getElementById(v).style.display=v===id?'block':'none'); };
-  document.getElementById('btn-new-offer').onclick = () => { offerItems=[]; renderItems(); show('form-view'); };
+  function renderItems() {
+    const list = document.getElementById('offer-items-list');
+    document.getElementById('offer-item-count').textContent = offerItems.length + ' ürün';
+    if (!offerItems.length) {
+      list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-3);font-size:13px"><i class="ti ti-package" style="font-size:32px;display:block;margin-bottom:8px;opacity:.4"></i>Henüz ürün eklenmedi</div>';
+      return;
+    }
+    list.innerHTML = offerItems.map((it,i) => {
+      const img = it.photo ? `<img src="${it.photo}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0">` : `<div style="width:48px;height:48px;border-radius:8px;background:var(--or-tint);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">🎒</div>`;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)">
+        ${img}
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${it.name}</div>
+          <div style="font-size:11px;color:var(--text-3)">${it.code||''}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+            <div style="display:flex;align-items:center;gap:4px;background:var(--bg);border-radius:6px;padding:2px 4px">
+              <button onclick="changeQty(${i},-1)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-2);width:20px;line-height:1">-</button>
+              <span style="font-size:13px;font-weight:600;min-width:24px;text-align:center">${it.qty}</span>
+              <button onclick="changeQty(${i},1)" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-2);width:20px;line-height:1">+</button>
+            </div>
+            <span style="font-size:11px;color:var(--text-3)">%${it.disc} indirim</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:13px;font-weight:700;color:var(--or)">₺${it.total.toLocaleString('tr-TR',{minimumFractionDigits:2})}</div>
+          <button onclick="removeItem(${i})" style="background:none;border:none;cursor:pointer;color:#F87171;font-size:12px;margin-top:2px"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.changeQty = (i, delta) => {
+    offerItems[i].qty = Math.max(1, offerItems[i].qty + delta);
+    offerItems[i].disc = getDiscount(offerItems[i].qty);
+    offerItems[i].total = offerItems[i].price * offerItems[i].qty * (1 - offerItems[i].disc/100);
+    renderItems(); updateTotals();
+  };
+
+  window.removeItem = (i) => { offerItems.splice(i,1); renderItems(); updateTotals(); };
+
+  function updateTotals() {
+    const sub = offerItems.reduce((a,it)=>a+it.total,0);
+    const kdv = sub * 0.20;
+    document.getElementById('o-subtotal-val').textContent = '₺'+sub.toLocaleString('tr-TR',{minimumFractionDigits:2});
+    document.getElementById('o-kdv-val').textContent = '₺'+kdv.toLocaleString('tr-TR',{minimumFractionDigits:2});
+    document.getElementById('o-total-val').textContent = '₺'+(sub+kdv).toLocaleString('tr-TR',{minimumFractionDigits:2});
+  }
+
+  // Görünüm
+  const show = (id) => ['list-view','form-view','pdf-view'].forEach(v=>document.getElementById(v).style.display=v===id?'block':'none');
+
+  document.getElementById('btn-new-offer').onclick = () => {
+    offerItems=[]; renderItems(); updateTotals();
+    offerNo = '#TKF-'+String(Math.floor(Math.random()*900)+100);
+    document.getElementById('offer-no').textContent = offerNo;
+    document.getElementById('o-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('o-customer').value='';
+    document.getElementById('o-contact').value='';
+    document.getElementById('o-note').value='';
+    show('form-view');
+  };
   document.getElementById('btn-back').onclick = () => show('list-view');
   document.getElementById('btn-back-pdf').onclick = () => show('form-view');
 
   // PDF Önizle
   document.getElementById('btn-preview').onclick = () => {
     const customer = document.getElementById('o-customer').value||'—';
-    const contact = document.getElementById('o-contact').value||'—';
+    const contact = document.getElementById('o-contact').value;
     const date = document.getElementById('o-date').value;
     const validity = document.getElementById('o-validity').value;
     const note = document.getElementById('o-note').value;
@@ -290,33 +401,37 @@ initPage('offers', (user) => {
 
     document.getElementById('pdf-content').innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #E85D04">
-        <div>
-          <div style="font-size:22px;font-weight:800;color:#E85D04">Çalışkan Çanta</div>
-          <div style="font-size:12px;color:#666">caliskancanta.com · info@caliskancanta.com</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:24px;font-weight:800;color:#1a1a1a">TEKLİF</div>
-          <div style="font-size:14px;color:#E85D04;font-weight:600">${offerNo}</div>
-          <div style="font-size:12px;color:#666">${date}</div>
-        </div>
+        <div><div style="font-size:22px;font-weight:800;color:#E85D04">Çalışkan Çanta</div><div style="font-size:12px;color:#666">caliskancanta.com · info@caliskancanta.com</div></div>
+        <div style="text-align:right"><div style="font-size:24px;font-weight:800">TEKLİF</div><div style="font-size:14px;color:#E85D04;font-weight:600">${offerNo}</div><div style="font-size:12px;color:#666">${date}</div></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:30px">
-        <div><div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:6px">Müşteri</div><div style="font-weight:600">${customer}</div><div style="font-size:12px;color:#666">${contact}</div></div>
+        <div><div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:6px">Müşteri</div><div style="font-weight:600">${customer}</div>${contact?`<div style="font-size:12px;color:#666">${contact}</div>`:''}</div>
         <div><div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:6px">Geçerlilik</div><div style="font-weight:600">${validity} gün</div></div>
         <div><div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:6px">Hazırlayan</div><div style="font-weight:600">${user.displayName||user.email.split('@')[0]}</div></div>
       </div>
       <table style="width:100%;border-collapse:collapse;margin-bottom:20px">
-        <thead><tr style="background:#f5f5f5">${['#','Ürün','Adet','Birim Fiyat','İskonto','Toplam'].map(h=>`<th style="padding:10px;text-align:left;font-size:12px;font-weight:700;color:#666">${h}</th>`).join('')}</tr></thead>
-        <tbody>${offerItems.map((it,i)=>`<tr style="border-bottom:1px solid #eee"><td style="padding:10px;font-size:13px">${i+1}</td><td style="padding:10px;font-size:13px;font-weight:600">${it.name}</td><td style="padding:10px;font-size:13px">${it.qty}</td><td style="padding:10px;font-size:13px">₺${it.price.toLocaleString('tr-TR')}</td><td style="padding:10px;font-size:13px">%${it.disc}</td><td style="padding:10px;font-size:13px;font-weight:700">₺${it.total.toLocaleString('tr-TR',{minimumFractionDigits:2})}</td></tr>`).join('')}</tbody>
+        <thead><tr style="background:#f5f5f5">${['Ürün','Adet','Birim Fiyat','İskonto','Toplam'].map(h=>`<th style="padding:10px;text-align:left;font-size:11px;font-weight:700;color:#666;text-transform:uppercase">${h}</th>`).join('')}</tr></thead>
+        <tbody>${offerItems.map(it=>`<tr style="border-bottom:1px solid #eee">
+          <td style="padding:12px 10px">
+            <div style="display:flex;align-items:center;gap:10px">
+              ${it.photo?`<img src="${it.photo}" style="width:40px;height:40px;object-fit:cover;border-radius:6px">`:`<div style="width:40px;height:40px;border-radius:6px;background:#FFF0E6;display:flex;align-items:center;justify-content:center;font-size:16px">🎒</div>`}
+              <div><div style="font-weight:600;font-size:13px">${it.name}</div><div style="font-size:11px;color:#999">${it.code||''}</div></div>
+            </div>
+          </td>
+          <td style="padding:12px 10px;font-size:13px">${it.qty}</td>
+          <td style="padding:12px 10px;font-size:13px">₺${it.price.toLocaleString('tr-TR')}</td>
+          <td style="padding:12px 10px;font-size:13px;color:#E85D04">%${it.disc}</td>
+          <td style="padding:12px 10px;font-size:13px;font-weight:700">₺${it.total.toLocaleString('tr-TR',{minimumFractionDigits:2})}</td>
+        </tr>`).join('')}</tbody>
       </table>
       <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
-        <div style="width:220px">
+        <div style="width:240px">
           <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px"><span>Ara Toplam</span><span>₺${sub.toLocaleString('tr-TR',{minimumFractionDigits:2})}</span></div>
           <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px"><span>KDV (%20)</span><span>₺${kdv.toLocaleString('tr-TR',{minimumFractionDigits:2})}</span></div>
           <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:16px;font-weight:800;border-top:2px solid #E85D04;margin-top:4px"><span>Genel Toplam</span><span style="color:#E85D04">₺${total.toLocaleString('tr-TR',{minimumFractionDigits:2})}</span></div>
         </div>
       </div>
-      ${note?`<div style="background:#f9f9f9;border-radius:8px;padding:12px;margin-bottom:20px;font-size:13px"><strong>Not:</strong> ${note}</div>`:''}
+      ${note?`<div style="background:#f9f9f9;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px"><strong>Not:</strong> ${note}</div>`:''}
       <div style="border-top:1px solid #eee;padding-top:16px;font-size:11px;color:#999">
         <strong style="color:#666">Teklif Koşulları</strong><br>
         • Fiyatlarımız KDV hariçtir. • Teslimat 15 iş günü. • Geçerlilik ${validity} gün. • Ödeme: %50 peşin.
@@ -331,41 +446,80 @@ initPage('offers', (user) => {
     if (!offerItems.length) { alert('En az bir ürün ekleyiniz'); return; }
     const total = offerItems.reduce((a,it)=>a+it.total,0);
     try {
-      await addDoc(col, {no:offerNo, customer, contact:document.getElementById('o-contact').value, items:offerItems, total, status:'pending', date:serverTimestamp(), by:user.displayName||user.email.split('@')[0]});
+      await addDoc(offersCol, {no:offerNo,customer,contact:document.getElementById('o-contact').value,items:offerItems.map(it=>({id:it.id,name:it.name,code:it.code,price:it.price,qty:it.qty,disc:it.disc,total:it.total})),total,status:'pending',date:serverTimestamp(),by:user.displayName||user.email.split('@')[0]});
     } catch(e){}
-    alert('Teklif kaydedildi ✓');
-    offerItems=[]; show('list-view'); loadOffers();
+    alert('Teklif kaydedildi ✓'); offerItems=[]; show('list-view'); loadOffers();
   };
 
-  // WhatsApp
+  // WhatsApp & Mail
   document.getElementById('btn-whatsapp').onclick = () => {
     const customer = document.getElementById('o-customer').value||'Müşteri';
     const total = offerItems.reduce((a,it)=>a+it.total,0);
-    const msg = encodeURIComponent(`Merhaba, ${customer} için hazırladığımız teklif ${offerNo}: Toplam ₺${total.toLocaleString('tr-TR')}. Detaylar için iletişime geçiniz.`);
-    window.open('https://wa.me/?text='+msg,'_blank');
+    window.open('https://wa.me/?text='+encodeURIComponent(`Sayın ${customer}, ${offerNo} nolu teklifimiz hazır. Toplam: ₺${total.toLocaleString('tr-TR')} (KDV hariç). Detaylar için iletişime geçiniz. - Çalışkan Çanta`),'_blank');
   };
-
-  // E-posta
   document.getElementById('btn-email').onclick = () => {
     const customer = document.getElementById('o-customer').value||'Müşteri';
     const total = offerItems.reduce((a,it)=>a+it.total,0);
-    const subject = encodeURIComponent(`Teklif ${offerNo} - Çalışkan Çanta`);
-    const body = encodeURIComponent(`Sayın ${customer},
+    window.location.href = `mailto:?subject=${encodeURIComponent('Teklif '+offerNo+' - Çalışkan Çanta')}&body=${encodeURIComponent('Sayın '+customer+',
 
 Teklifimizi ekte bulabilirsiniz.
 
-Teklif No: ${offerNo}
-Toplam: ₺${total.toLocaleString('tr-TR')}
+Teklif No: '+offerNo+'
+Toplam: ₺'+total.toLocaleString('tr-TR')+' (KDV hariç)
 
 Saygılarımızla,
-Çalışkan Çanta`);
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+Çalışkan Çanta')}`;
   };
 
-  // PDF İndir (print)
-  document.getElementById('btn-download-pdf').onclick = () => window.print();
+  // Barkod kamera
+  let camStream = null;
+  window.openBarcodeCamera = function(inputId) {
+    const target = document.getElementById(inputId);
+    document.getElementById('cam-modal').style.display = 'flex';
+    document.getElementById('cam-manual').value = '';
+    document.getElementById('cam-manual-btn').onclick = () => {
+      const v = document.getElementById('cam-manual').value.trim();
+      if (v && target) { target.value=v; target.dispatchEvent(new Event('input')); }
+      stopCam();
+    };
+    startCam(target);
+  };
+  document.getElementById('cam-close').onclick = stopCam;
+  function stopCam() {
+    if (camStream) { camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+    document.getElementById('cam-modal').style.display='none';
+  }
+  async function startCam(target) {
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      const v = document.getElementById('cam-video');
+      v.srcObject = camStream;
+      document.getElementById('cam-status').textContent = 'Barkodu çerçeveye getirin...';
+      if (window.BarcodeDetector) {
+        const det = new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','qr_code','upc_a']});
+        const scan = async () => {
+          if (!camStream) return;
+          try {
+            const codes = await det.detect(v);
+            if (codes.length) {
+              const val = codes[0].rawValue;
+              if (target) { target.value=val; target.dispatchEvent(new Event('input')); }
+              document.getElementById('cam-status').textContent = '✓ Okundu: '+val;
+              setTimeout(stopCam, 600);
+              return;
+            }
+          } catch(e){}
+          if (camStream) requestAnimationFrame(scan);
+        };
+        v.addEventListener('loadeddata', ()=>requestAnimationFrame(scan), {once:true});
+      } else {
+        document.getElementById('cam-status').textContent = 'Manuel giriş yapın';
+      }
+    } catch(e) { document.getElementById('cam-status').textContent = 'Kamera erişilemedi'; }
+  }
 
-  loadOffers();
+  // Init
+  Promise.all([loadOffers(), loadProducts()]);
 });
 </script>
 </body>

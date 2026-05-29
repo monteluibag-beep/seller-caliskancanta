@@ -91,7 +91,7 @@
           <div><div class="card-title">Tüm Ürünler</div><div class="card-sub" id="prod-count"></div></div>
         </div>
         <div class="table-wrap"><table>
-          <thead><tr><th>Ürün Kodu</th><th class="hide-mob">Barkod</th><th>Ürün Adı</th><th class="hide-mob">Kategori</th><th>Raf</th><th class="hide-mob">Maliyet</th><th class="hide-mob">Liste</th><th>Stok</th><th>Durum</th><th></th></tr></thead>
+          <thead><tr><th>Foto</th><th>Ürün Kodu</th><th class="hide-mob">Barkod</th><th>Ürün Adı</th><th class="hide-mob">Kategori</th><th>Raf</th><th class="hide-mob">Maliyet</th><th class="hide-mob">Liste</th><th>Stok</th><th>Durum</th><th></th></tr></thead>
           <tbody id="prod-tbody"></tbody>
         </table></div>
       </div>
@@ -137,7 +137,11 @@ function renderProducts(list) {
     const sc = p.stock<=5?'color:#DC2626;font-weight:700':p.stock<=10?'color:#D97706;font-weight:600':'';
     const usd = r.USD ? (p.cost/r.USD).toFixed(2) : '—';
     const eur = r.EUR ? (p.cost/r.EUR).toFixed(2) : '—';
+    const photoCell = p.photo
+      ? `<img src="${p.photo}" style="width:44px;height:44px;object-fit:cover;border-radius:8px;cursor:pointer" onclick="openPhotoUpload('${p.id}')" title="Fotoğrafı değiştir">`
+      : `<button onclick="openPhotoUpload('${p.id}')" style="width:44px;height:44px;border-radius:8px;background:var(--or-tint);border:1px dashed var(--or-muted);cursor:pointer;color:var(--or);font-size:18px;display:flex;align-items:center;justify-content:center" title="Fotoğraf ekle"><i class="ti ti-camera"></i></button>`;
     return `<tr>
+      <td>${photoCell}</td>
       <td class="mono">${p.code}</td>
       <td class="mono hide-mob">${p.barcode}</td>
       <td style="font-weight:600">${p.name}</td>
@@ -284,6 +288,58 @@ initPage('products', () => {
     video.addEventListener('loadeddata', () => requestAnimationFrame(detect), {once:true});
   }
 })();
+</script>
+<script>
+
+// Fotoğraf yükleme
+window.openPhotoUpload = function(productId) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    // Sıkıştır
+    const compressed = await compressImage(file, 800, 0.7);
+    // Demo: localStorage'a kaydet (Firebase Storage entegrasyonu eklenebilir)
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target.result;
+      // Firestore'a kaydet
+      try {
+        const { getFirestore, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        const { app } = await import("/_common.js");
+        const db = getFirestore(app);
+        await updateDoc(doc(db, 'products', productId), { photo: base64 });
+      } catch(e) {}
+      // Demo veride de güncelle
+      const p = demoProducts.find(p=>p.id==productId);
+      if (p) p.photo = base64;
+      renderProducts(products.length ? products : demoProducts);
+    };
+    reader.readAsDataURL(compressed);
+  };
+  input.click();
+};
+
+async function compressImage(file, maxSize, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = h*maxSize/w; w = maxSize; }
+        else { w = w*maxSize/h; h = maxSize; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
 </script>
 </body>
 </html>
