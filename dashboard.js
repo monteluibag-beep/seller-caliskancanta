@@ -147,3 +147,37 @@ function initSidebarCollapse() {
 
 document.addEventListener('DOMContentLoaded', () => { initSidebarCollapse(); });
 EOF
+// Hamburger sidebar collapse
+function initSidebarCollapse() {
+  const sidebar = document.querySelector('aside.sidebar');
+  if (!sidebar) return;
+  const brand = sidebar.querySelector('.sidebar-brand');
+  if (brand) {
+    const existingHTML = brand.innerHTML;
+    brand.innerHTML = `<div class="brand-info">${existingHTML}</div><button class="sidebar-toggle" id="sidebar-toggle"><svg class="hamburger-icon" width="18" height="14" viewBox="0 0 18 14" fill="none"><rect x="0" y="0" width="18" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="12" width="10" height="2" rx="1" fill="currentColor"/></svg></button>`;
+  }
+  sidebar.querySelectorAll('.nav-item[data-page]').forEach(item => {
+    item.childNodes.forEach(node => {
+      if (node.nodeType === 3 && node.textContent.trim()) {
+        const label = node.textContent.trim();
+        item.setAttribute('data-label', label);
+        const span = document.createElement('span');
+        span.className = 'nav-text';
+        span.textContent = label;
+        node.replaceWith(span);
+      }
+    });
+    if (!item.dataset.label) {
+      const txt = item.querySelector('span, .nav-text');
+      if (txt) item.setAttribute('data-label', txt.textContent.trim());
+    }
+  });
+  const btn = document.getElementById('sidebar-toggle');
+  if (!btn) return;
+  if (localStorage.getItem('sb-collapsed') === '1') sidebar.classList.add('collapsed');
+  btn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    localStorage.setItem('sb-collapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+  });
+}
+document.addEventListener('DOMContentLoaded', () => { initSidebarCollapse(); });
