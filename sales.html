@@ -5,6 +5,61 @@
 <title>Satışlar — Çalışkan Çanta</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link rel="stylesheet" href="/style.css">
+
+<style>
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width: 768px) {
+  .layout { flex-direction: column; }
+  .sidebar { display: none; }
+  .main { min-width: 0; overflow-x: hidden; }
+  .mob-topbar { display: flex !important; }
+  .bottom-nav { display: flex !important; }
+  .topbar { padding: 12px 14px; }
+  .page-content { padding: 14px 12px 80px; }
+  .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr !important; }
+  .data-table { font-size: 12px; }
+  .data-table th, .data-table td { padding: 8px 6px; }
+  .card-header { flex-wrap: wrap; gap: 8px; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .topbar-right { gap: 6px; }
+  .topbar-right .btn { padding: 6px 10px; font-size: 12px; }
+  /* Modal mobile */
+  div[style*="max-width:560px"], div[style*="max-width:480px"], div[style*="max-width:440px"] {
+    max-width: 95vw !important;
+    width: 95vw !important;
+    margin: 10px auto !important;
+    padding: 18px !important;
+  }
+  /* Form grid mobile */
+  div[style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* Offers form */
+  div[style*="grid-template-columns:340px 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* PDF önizleme */
+  #pdf-content { padding: 20px !important; }
+  #pdf-content div[style*="grid-template-columns:1fr 1fr 1fr"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  /* Ürün grid */
+  #o-prod-grid { grid-template-columns: 1fr 1fr !important; }
+  /* Topbar title */
+  .page-title { font-size: 16px; }
+  /* Stat cards */
+  .stat-card { padding: 14px 12px; }
+  .stat-val { font-size: 22px; }
+}
+
+@media (max-width: 420px) {
+  .stats-grid { grid-template-columns: 1fr 1fr !important; }
+  .page-content { padding: 12px 10px 80px; }
+  #o-prod-grid { grid-template-columns: 1fr 1fr !important; }
+  .data-table th:nth-child(n+4), .data-table td:nth-child(n+4) { display: none; }
+}
+</style>
 </head>
 <body>
 <div id="loading-screen"><div class="loading-inner"><div class="loading-logo"><i class="ti ti-briefcase"></i></div><div class="loading-text">Yükleniyor...</div></div></div>
