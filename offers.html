@@ -455,20 +455,12 @@ initPage('offers', (user) => {
   document.getElementById('btn-whatsapp').onclick = () => {
     const customer = document.getElementById('o-customer').value||'Müşteri';
     const total = offerItems.reduce((a,it)=>a+it.total,0);
-    window.open('https://wa.me/?text='+encodeURIComponent(`Sayın ${customer}, ${offerNo} nolu teklifimiz hazır. Toplam: ₺${total.toLocaleString('tr-TR')} (KDV hariç). Detaylar için iletişime geçiniz. - Çalışkan Çanta`),'_blank');
+    var msg='Sayin '+customer+', '+offerNo+' nolu teklifimiz hazir. Toplam: '+total.toLocaleString('tr-TR')+' TL (KDV haric). Detaylar icin iletisime geciniz. - Calıskan Canta'; window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
   };
   document.getElementById('btn-email').onclick = () => {
     const customer = document.getElementById('o-customer').value||'Müşteri';
     const total = offerItems.reduce((a,it)=>a+it.total,0);
-    window.location.href = `mailto:?subject=${encodeURIComponent('Teklif '+offerNo+' - Çalışkan Çanta')}&body=${encodeURIComponent('Sayın '+customer+',
-
-Teklifimizi ekte bulabilirsiniz.
-
-Teklif No: '+offerNo+'
-Toplam: ₺'+total.toLocaleString('tr-TR')+' (KDV hariç)
-
-Saygılarımızla,
-Çalışkan Çanta')}`;
+    window.location.href = 'mailto:?subject='+encodeURIComponent('Teklif '+offerNo+' - Calıskan Canta')+'&body='+encodeURIComponent('Sayin '+customer+', teklifimiz hazir. Teklif No: '+offerNo+' Toplam: '+total.toLocaleString('tr-TR')+' TL (KDV haric). Saygılarımızla, Calıskan Canta');
   };
 
   // Barkod kamera
