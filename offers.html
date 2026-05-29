@@ -590,7 +590,7 @@ initPage('offers', (user) => {
       }
     } catch(e) { document.getElementById('cam-status').textContent = 'Kamera erişilemedi'; }
   }
-  document.getElementById('cam-close').onclick = stopCam;
+  const camCloseBtn = document.getElementById('cam-close'); if(camCloseBtn) camCloseBtn.onclick = stopCam;
 
   // Teklif listesi
   async function loadOffers() {
@@ -634,5 +634,26 @@ initPage('offers', (user) => {
   Promise.all([loadOffers(), loadProducts()]);
 });
 </script>
+
+<!-- BARKOD KAMERA MODAL -->
+<div id="cam-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;flex-direction:column">
+  <div style="width:320px;max-width:95vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span style="color:#fff;font-weight:700;font-size:15px">📷 Barkod Okuyucu</span>
+      <button id="cam-close" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:8px;padding:6px 14px;cursor:pointer">Kapat</button>
+    </div>
+    <div style="position:relative;border-radius:12px;overflow:hidden;background:#000">
+      <video id="cam-video" autoplay playsinline style="width:100%;height:260px;object-fit:cover;display:block"></video>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+        <div style="width:200px;height:100px;border:2px solid #E85D04;border-radius:8px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)"></div>
+      </div>
+      <div id="cam-status" style="position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#fff;font-size:12px;background:rgba(0,0,0,.5);padding:5px">Başlatılıyor...</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <input id="cam-manual" class="form-input" placeholder="Manuel barkod gir..." style="flex:1">
+      <button id="cam-manual-btn" class="btn btn-primary">Ara</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
