@@ -77,13 +77,13 @@
       <div class="topbar-left"><div class="page-title">Ürünler</div></div>
       <div class="topbar-right">
         <a href="/add-product.html" class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Yeni Ürün</a>
-        <button class="btn btn-sm" data-action="openBarcode"><i class="ti ti-scan"></i> Barkod</button>
+        
       </div>
     </div>
     <div class="page-content">
-      <div class="search-wrap">
+      <div class="search-wrap" style="position:relative">
         <i class="ti ti-search search-icon"></i>
-        <input class="form-input search-input" id="prod-search" placeholder="Ürün adı, barkod veya raf kodu ile ara..." data-action="filterProducts" data-target="prod-search" autocomplete="off">
+        <input class="form-input search-input" id="prod-search" placeholder="Ürün adı, barkod veya raf kodu ile ara..." data-action="filterProducts" data-target="prod-search" autocomplete="off"><button onclick="openBarcodeCamera('prod-search')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-3);font-size:18px;display:flex;align-items:center" title="Barkod Okut"><i class="ti ti-camera"></i></button>
         <div class="dropdown" id="prod-dd"></div>
       </div>
       <div class="card">
@@ -99,15 +99,7 @@
   </div>
 </div>
 
-<!-- BARKOD MODAL -->
-<div id="barcode-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:16px;padding:28px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-    <div style="width:56px;height:56px;background:var(--or-tint);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;color:var(--or)"><i class="ti ti-scan"></i></div>
-    <div style="font-size:16px;font-weight:700;margin-bottom:6px">Barkod Okuyucu</div>
-    <div style="font-size:13px;color:var(--text-3);margin-bottom:16px">Barkodu manuel girin</div>
-    <input class="form-input" id="barcode-input" placeholder="Barkod numarası..." style="margin-bottom:12px">
-    <div style="display:flex;gap:8px"><button class="btn" style="flex:1;justify-content:center" data-action="closeBarcode">İptal</button><button class="btn btn-primary" style="flex:1;justify-content:center" data-action="searchBarcode"><i class="ti ti-check"></i> Ara</button></div>
-  </div>
+
 </div>
 
 <script type="module">
@@ -207,6 +199,91 @@ document.addEventListener('click', e => {
 initPage('products', () => {
   renderProducts(demoProducts);
 });
+</script>
+
+<!-- BARKOD KAMERA MODAL -->
+<div id="cam-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;flex-direction:column">
+  <div style="position:relative;width:320px;max-width:95vw">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <span style="color:#fff;font-weight:700;font-size:15px"><i class="ti ti-scan" style="color:var(--or)"></i> Barkod Okuyucu</span>
+      <button id="cam-close" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px">✕ Kapat</button>
+    </div>
+    <div style="position:relative;border-radius:12px;overflow:hidden;background:#000">
+      <video id="cam-video" autoplay playsinline style="width:100%;height:280px;object-fit:cover;display:block"></video>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+        <div style="width:220px;height:120px;border:2px solid var(--or);border-radius:8px;box-shadow:0 0 0 1000px rgba(0,0,0,.4)"></div>
+      </div>
+      <div id="cam-status" style="position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#fff;font-size:12px;background:rgba(0,0,0,.5);padding:4px">Kamera başlatılıyor...</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <input id="cam-manual" class="form-input" placeholder="Manuel giriş..." style="flex:1">
+      <button id="cam-manual-btn" class="btn btn-primary" style="white-space:nowrap">Ara</button>
+    </div>
+  </div>
+</div>
+<script>
+
+// Barkod kamera
+(function() {
+  let stream = null, scanning = false, targetInput = null;
+
+  window.openBarcodeCamera = function(inputId) {
+    targetInput = document.getElementById(inputId);
+    document.getElementById('cam-modal').style.display = 'flex';
+    document.getElementById('cam-manual').value = '';
+    startCamera();
+  };
+
+  document.getElementById('cam-close').onclick = stopCamera;
+  document.getElementById('cam-manual-btn').onclick = () => {
+    const val = document.getElementById('cam-manual').value.trim();
+    if (val && targetInput) { targetInput.value = val; targetInput.dispatchEvent(new Event('input')); }
+    stopCamera();
+  };
+
+  function stopCamera() {
+    scanning = false;
+    if (stream) { stream.getTracks().forEach(t=>t.stop()); stream = null; }
+    document.getElementById('cam-modal').style.display = 'none';
+  }
+
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      const video = document.getElementById('cam-video');
+      video.srcObject = stream;
+      document.getElementById('cam-status').textContent = 'Barkodu çerçeveye getirin...';
+      scanning = true;
+      scanLoop(video);
+    } catch(e) {
+      document.getElementById('cam-status').textContent = 'Kamera erişilemedi. Manuel giriş yapın.';
+    }
+  }
+
+  async function scanLoop(video) {
+    if (!scanning) return;
+    if (!window.BarcodeDetector) {
+      document.getElementById('cam-status').textContent = 'Tarayıcınız barkod okumayı desteklemiyor. Manuel giriş yapın.';
+      return;
+    }
+    const detector = new BarcodeDetector({formats:['ean_13','ean_8','code_128','code_39','qr_code','upc_a','upc_e']});
+    const detect = async () => {
+      if (!scanning) return;
+      try {
+        const codes = await detector.detect(video);
+        if (codes.length > 0) {
+          const val = codes[0].rawValue;
+          if (targetInput) { targetInput.value = val; targetInput.dispatchEvent(new Event('input')); }
+          document.getElementById('cam-status').textContent = '✓ Okundu: ' + val;
+          setTimeout(stopCamera, 800);
+          return;
+        }
+      } catch(e) {}
+      if (scanning) requestAnimationFrame(detect);
+    };
+    video.addEventListener('loadeddata', () => requestAnimationFrame(detect), {once:true});
+  }
+})();
 </script>
 </body>
 </html>
