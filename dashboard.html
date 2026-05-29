@@ -199,5 +199,18 @@
 </div>
 
 <script type="module" src="/dashboard.js"></script>
+<script>
+window.addEventListener('load', function() {
+  var s = document.querySelector('.sidebar');
+  var btn = document.getElementById('sidebar-toggle');
+  if (s && btn) {
+    if (localStorage.getItem('sb-collapsed') === '1') s.classList.add('collapsed');
+    btn.addEventListener('click', function() {
+      s.classList.toggle('collapsed');
+      localStorage.setItem('sb-collapsed', s.classList.contains('collapsed') ? '1' : '0');
+    });
+  }
+});
+</script>
 </body>
 </html>
