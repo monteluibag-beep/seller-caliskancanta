@@ -263,39 +263,69 @@ initPage('offers', (user) => {
     const grid = document.getElementById('o-prod-grid');
     const empty = document.getElementById('o-prod-empty');
     const hint = document.getElementById('o-prod-hint');
-    
     hint.style.display = 'none';
-    
-    if (!products.length) {
-      grid.innerHTML = '';
-      empty.style.display = 'block';
-      return;
-    }
+    grid.innerHTML = '';
+    if (!products.length) { empty.style.display='block'; return; }
     empty.style.display = 'none';
-    
-    grid.innerHTML = products.slice(0, 10).map(p => {
+    products.slice(0,10).forEach(p => {
       const inOffer = offerItems.find(it => it.id === p.id);
-      const disc = getDiscount(inOffer ? inOffer.qty : 1);
-      const price = p.list || 0;
-      const img = p.photo
-        ? '<img src="'+p.photo+'" style="width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px">'
-        : '<div style="width:100%;height:110px;border-radius:8px;background:var(--or-tint);display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:36px">🎒</div>';
-      const addedBadge = inOffer ? '<div style="position:absolute;top:8px;right:8px;background:var(--or);color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700">'+inOffer.qty+' adet</div>' : '';
-      
-      return '<div onclick="addToOffer(''+p.id+'')" style="position:relative;background:var(--surface);border:1.5px solid '+(inOffer?'var(--or)':'var(--border)')+';border-radius:10px;padding:12px;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--or)';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor=''+(inOffer?'var(--or)':'var(--border)')+'';this.style.transform=''">'+
-        addedBadge +
-        img +
-        '<div style="font-size:12px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+p.name+'</div>'+
-        '<div style="font-size:10px;color:var(--text-3);margin-bottom:6px">'+p.code+'</div>'+
-        '<div style="display:flex;align-items:center;justify-content:space-between">'+
-          '<div style="font-size:14px;font-weight:800;color:var(--or)">'+formatPrice(price)+'</div>'+
-          '<div style="font-size:10px;color:var(--text-3)">Stok: '+p.stock+'</div>'+
-        '</div>'+
-        (disc ? '<div style="font-size:10px;color:#4ADE80;margin-top:2px">%'+disc+' iskonto uygulanır</div>' : '')+
-      '</div>';
-    }).join('');
-  }
+      const card = document.createElement('div');
+      card.style.cssText = 'position:relative;background:var(--surface);border:1.5px solid '+(inOffer?'var(--or)':'var(--border)')+';border-radius:10px;padding:12px;cursor:pointer;transition:border-color .15s,transform .15s';
+      card.onmouseover = () => { card.style.borderColor='var(--or)'; card.style.transform='translateY(-2px)'; };
+      card.onmouseout  = () => { card.style.borderColor=inOffer?'var(--or)':'var(--border)'; card.style.transform=''; };
+      card.onclick = () => addToOffer(p.id);
 
+      if (inOffer) {
+        const badge = document.createElement('div');
+        badge.style.cssText = 'position:absolute;top:8px;right:8px;background:var(--or);color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700;z-index:1';
+        badge.textContent = inOffer.qty + ' adet';
+        card.appendChild(badge);
+      }
+
+      if (p.photo) {
+        const img = document.createElement('img');
+        img.src = p.photo;
+        img.style.cssText = 'width:100%;height:110px;object-fit:cover;border-radius:8px;margin-bottom:8px;display:block';
+        card.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.style.cssText = 'width:100%;height:110px;border-radius:8px;background:var(--or-tint);display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:36px';
+        ph.textContent = '🎒';
+        card.appendChild(ph);
+      }
+
+      const name = document.createElement('div');
+      name.style.cssText = 'font-size:12px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+      name.textContent = p.name;
+      card.appendChild(name);
+
+      const code = document.createElement('div');
+      code.style.cssText = 'font-size:10px;color:var(--text-3);margin-bottom:6px';
+      code.textContent = p.code || '';
+      card.appendChild(code);
+
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between';
+      const priceEl = document.createElement('div');
+      priceEl.style.cssText = 'font-size:14px;font-weight:800;color:var(--or)';
+      priceEl.textContent = formatPrice(p.list||0);
+      const stockEl = document.createElement('div');
+      stockEl.style.cssText = 'font-size:10px;color:var(--text-3)';
+      stockEl.textContent = 'Stok: ' + (p.stock||0);
+      row.appendChild(priceEl); row.appendChild(stockEl);
+      card.appendChild(row);
+
+      const disc = getDiscount(inOffer ? inOffer.qty : 1);
+      if (disc) {
+        const discEl = document.createElement('div');
+        discEl.style.cssText = 'font-size:10px;color:#4ADE80;margin-top:2px';
+        discEl.textContent = '%' + disc + ' iskonto uygulanır';
+        card.appendChild(discEl);
+      }
+
+      grid.appendChild(card);
+    });
+  }
   // Ürün arama
   document.getElementById('o-search').addEventListener('input', function() {
     const q = this.value.trim().toLowerCase();
