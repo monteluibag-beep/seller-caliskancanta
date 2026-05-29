@@ -37,7 +37,7 @@
   --amber-bg: #FEF3C7;
 
   /* Layout */
-  --sidebar-w: 220px;
+  --sidebar-w: 240px;
   --radius:    12px;
   --radius-sm: 8px;
   --radius-xs: 6px;
@@ -173,18 +173,19 @@ html, body {
 
 .sidebar-footer {
   margin-top: auto;
-  padding: 16px 12px;
+  padding: 12px 10px;
   border-top: 1px solid rgba(255,255,255,.06);
 }
 
 .user-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 6px;
+  padding: 8px 8px;
   border-radius: var(--radius-sm);
   background: rgba(255,255,255,.07);
   border: 1px solid rgba(255,255,255,.08);
+  overflow: hidden;
 }
 
 .user-av {
@@ -222,6 +223,41 @@ html, body {
 }
 
 .logout-btn:hover { background: rgba(220,38,38,.2); color: #FCA5A5; }
+/* ── SIDEBAR LOGOUT BUTTON (rates-bar altında) ── */
+.rate-divider {
+  height: 1px;
+  background: rgba(255,255,255,.08);
+  margin: 8px 0 6px;
+}
+
+.sidebar-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.07);
+  color: rgba(255,255,255,.6);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all .15s;
+}
+
+.sidebar-logout-btn:hover {
+  background: rgba(220,38,38,.18);
+  border-color: rgba(220,38,38,.3);
+  color: #FCA5A5;
+}
+
+.sidebar-logout-btn i {
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
 
 /* ── RATES BAR ── */
 .rates-bar {
@@ -237,7 +273,7 @@ html, body {
   padding: 3px 0;
 }
 
-.rate-label { font-size: 10px; color: rgba(255,255,255,.6); display: flex; align-items: center; gap: 5px; }
+.rate-label { font-size: 11px; color: rgba(255,255,255,.8); display: flex; align-items: center; gap: 5px; }
 .rate-val { font-family: var(--mono); font-size: 11px; font-weight: 600; color: rgba(255,255,255,.9); }
 .rate-chg { font-size: 9px; }
 .up { color: #4ADE80; }
@@ -766,3 +802,5 @@ select.form-input { cursor: pointer; }
 .dim-label { font-size: 11px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
 .perm-yes { color: var(--green); font-size: 16px; }
 .perm-no  { color: var(--text-3); font-size: 16px; }
+
+.sidebar-footer { display: none; }
