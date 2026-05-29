@@ -1,71 +1,97 @@
 import { requireAuth, logout } from './firebase.js';
 
-// 1. GÜVENLİK DUVARI: Oturumu kontrol et, yükleme ekranını kapat, bilgileri bas
+// Döviz kurları
+let rates = { USD: 0, EUR: 0, GBP: 0 };
+let prevRates = { USD: 0, EUR: 0, GBP: 0 };
+
+async function fetchRates() {
+  try {
+    const res = await fetch('https://open.er-api.com/v6/latest/TRY');
+    const data = await res.json();
+    if (data.result === 'success') {
+      prevRates = { ...rates };
+      rates.USD = parseFloat((1 / data.rates.USD).toFixed(4));
+      rates.EUR = parseFloat((1 / data.rates.EUR).toFixed(4));
+      rates.GBP = parseFloat((1 / data.rates.GBP).toFixed(4));
+    }
+  } catch (e) {}
+  updateRateUI();
+}
+
+function updateRateUI() {
+  const timeStr = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+  [
+    { key: 'USD', valId: 'r-usd', chgId: 'r-usd-c' },
+    { key: 'EUR', valId: 'r-eur', chgId: 'r-eur-c' },
+    { key: 'GBP', valId: 'r-gbp', chgId: 'r-gbp-c' }
+  ].forEach(r => {
+    const val = rates[r.key], prev = prevRates[r.key] || val;
+    const diff = val - prev, pct = prev ? ((diff / prev) * 100).toFixed(2) : '0.00';
+    const up = diff >= 0, cls = up ? 'up' : 'dn', arrow = up ? '▲' : '▼';
+    const ve = document.getElementById(r.valId), ce = document.getElementById(r.chgId);
+    if (ve) ve.textContent = '₺' + val.toFixed(2);
+    if (ce) ce.innerHTML = `<span class="${cls}">${arrow}${Math.abs(pct)}%</span>`;
+  });
+  const t = document.getElementById('r-time');
+  if (t) t.textContent = timeStr + ' güncellendi';
+}
+
+// 1. AUTH GUARD
 requireAuth((user) => {
-    // Profil alanlarını doldur
-    const emailFields = ['user-email-drawer', 'user-email-sidebar'];
-    emailFields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = user.email;
-    });
+  // Kullanıcı bilgisi — tüm ID varyantları
+  const displayName = user.displayName || user.email.split('@')[0].toUpperCase();
+  const initials = displayName.charAt(0).toUpperCase();
 
-    const nameFields = ['user-name-drawer', 'user-name-sidebar'];
-    nameFields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = user.email.split('@')[0].toUpperCase();
-    });
+  ['user-av-drawer', 'user-av-sidebar'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = initials;
+  });
+  ['user-name-drawer', 'user-name-sidebar'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = displayName;
+  });
+  ['user-email-drawer', 'user-email-sidebar'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = user.email;
+  });
 
-    const avFields = ['user-av-drawer', 'user-av-sidebar'];
-    avFields.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = user.email.charAt(0).toUpperCase();
-    });
+  initDate();
 
-    // Sayfa tarihini ekrana bas
-    initDate();
+  // Döviz kurlarını başlat
+  fetchRates();
+  setInterval(fetchRates, 5 * 60 * 1000);
 });
 
-// 2. TARİH FONKSİYONU
+// 2. TARİH
 function initDate() {
-    const d = new Date();
-    const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
-    const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-    const el = document.getElementById('today-date');
-    if(el) el.textContent = d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear()+', '+days[d.getDay()];
+  const d = new Date();
+  const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  const el = document.getElementById('today-date');
+  if (el) el.textContent = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ', ' + days[d.getDay()];
 }
 
-// 3. MOBİL ÇEKMECE (DRAWER) KONTROLLERİ (CSP Engeline takılmayan harici dinleyiciler)
+// 3. DRAWER
 function openDrawer() {
-    document.getElementById('drawer')?.classList.add('open');
-    document.getElementById('drawer-overlay')?.classList.add('show');
+  document.getElementById('drawer')?.classList.add('open');
+  document.getElementById('drawer-overlay')?.classList.add('show');
 }
-
 function closeDrawer() {
-    document.getElementById('drawer')?.classList.remove('open');
-    document.getElementById('drawer-overlay')?.classList.remove('show');
+  document.getElementById('drawer')?.classList.remove('open');
+  document.getElementById('drawer-overlay')?.classList.remove('show');
 }
 
-// Sayfa yüklenince buton olaylarını bağla
+// 4. EVENT LİSTENER'LAR
 document.addEventListener('DOMContentLoaded', () => {
-    // Çekmeceyi açma butonları
-    document.getElementById('btn-open-drawer-mob')?.addEventListener('click', openDrawer);
-    document.getElementById('btn-open-drawer-bottom')?.addEventListener('click', openDrawer);
+  document.getElementById('btn-open-drawer-mob')?.addEventListener('click', openDrawer);
+  document.getElementById('btn-open-drawer-bottom')?.addEventListener('click', openDrawer);
+  document.getElementById('btn-close-drawer')?.addEventListener('click', closeDrawer);
+  document.getElementById('drawer-overlay')?.addEventListener('click', closeDrawer);
+  document.querySelectorAll('.drawer .nav-item').forEach(item => item.addEventListener('click', closeDrawer));
 
-    // Çekmeceyi kapatma butonları
-    document.getElementById('btn-close-drawer')?.addEventListener('click', closeDrawer);
-    document.getElementById('drawer-overlay')?.addEventListener('click', closeDrawer);
-
-    // Menü linklerine tıklandığında çekmeceyi otomatik kapat
-    document.querySelectorAll('.drawer .nav-item').forEach(item => {
-        item.addEventListener('click', closeDrawer);
+  // Çıkış — hem class hem data-action
+  document.querySelectorAll('.btn-logout-trigger, [data-action="doLogout"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      logout().catch(() => { window.location.href = '/index.html'; });
     });
-
-    // Güvenli çıkış yapma olayı — hem class hem data-action
-    document.querySelectorAll('.btn-logout-trigger, [data-action="doLogout"]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            logout().catch(() => { window.location.href = '/index.html'; });
-        });
-    });
+  });
 });
