@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Hamburger
 document.addEventListener("DOMContentLoaded", function() {
-  var s = document.querySelector("aside.sidebar");
+  var s = document.querySelector(".sidebar");
   if (!s) return;
   var b = s.querySelector(".sidebar-brand");
   if (b) {
