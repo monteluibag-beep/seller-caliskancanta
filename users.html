@@ -76,14 +76,114 @@
       <div class="topbar-right" id="page-actions"></div>
     </div>
     <div class="page-content" id="page-body">
-      <div class="card"><div class="card-header"><div class="card-title">Kullanıcılar</div></div><p style="color:var(--text-3);padding:20px 0">Bu sayfa Copilot ile geliştirmeye hazır.</p></div>
+<div style="display:flex;gap:8px;margin-bottom:20px">
+  <button class="btn btn-primary" id="btn-new-user"><i class="ti ti-user-plus"></i> Kullanıcı Ekle</button>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <div class="card-header"><div class="card-title">Kullanıcılar</div></div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Kullanıcı</th><th>Rol</th><th>Yetkiler</th><th>Durum</th><th></th></tr></thead>
+      <tbody id="users-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><div class="card-title">Yetki Matrisi</div></div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Yetki</th><th>Yönetici</th><th>Atölye</th><th>Satış</th></tr></thead>
+      <tbody>
+        <tr><td>Üretim maliyeti gir</td><td>✅</td><td>✅</td><td>❌</td></tr>
+        <tr><td>Teklif hazırla</td><td>✅</td><td>❌</td><td>✅</td></tr>
+        <tr><td>Stok düzenle</td><td>✅</td><td>✅</td><td>❌</td></tr>
+        <tr><td>Kullanıcı ekle</td><td>✅</td><td>❌</td><td>❌</td></tr>
+        <tr><td>Kategori ekle</td><td>✅</td><td>❌</td><td>❌</td></tr>
+        <tr><td>Ayarları değiştir</td><td>✅</td><td>❌</td><td>❌</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal-user" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:16px;padding:28px;width:90%;max-width:440px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="font-size:16px;font-weight:700">Kullanıcı Ekle</h3>
+      <button id="close-user" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-3)"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-group"><label class="form-label">Ad Soyad *</label><input class="form-input" id="u-name" placeholder="Ad Soyad"></div>
+    <div class="form-group"><label class="form-label">E-posta *</label><input class="form-input" id="u-email" type="email" placeholder="email@caliskancanta.com"></div>
+    <div class="form-group"><label class="form-label">Rol *</label>
+      <select class="form-input" id="u-role">
+        <option value="admin">Yönetici</option>
+        <option value="atolye">Atölye</option>
+        <option value="sales">Satış</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button id="cancel-user" class="btn btn-secondary" style="flex:1">İptal</button>
+      <button id="save-user" class="btn btn-primary" style="flex:1"><i class="ti ti-check"></i> Kaydet</button>
+    </div>
+  </div>
+</div>
     </div>
   </div>
 </div>
 <script type="module">
 import { initPage } from '/_common.js';
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { app } from '/_common.js';
+
 initPage('users', (user) => {
-  // Sayfa JS buraya yazılacak
+  const db = getFirestore(app);
+  const col = collection(db, 'users');
+  let users = [];
+
+  const roleMap = {admin:{label:'Yönetici',color:'var(--or)'},atolye:{label:'Atölye',color:'#818CF8'},sales:{label:'Satış',color:'#4ADE80'}};
+
+  async function load() {
+    try {
+      const snap = await getDocs(col);
+      users = snap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e) {
+      users = [
+        {name:'Admin',email:'admin@caliskancanta.com',role:'admin',active:true},
+        {name:'Atölye',email:'atolye@caliskancanta.com',role:'atolye',active:true},
+        {name:'Mert Taşkın',email:'mert@caliskancanta.com',role:'sales',active:true},
+      ];
+    }
+    render();
+  }
+
+  function render() {
+    document.getElementById('users-tbody').innerHTML = users.map(u=>{
+      const r = roleMap[u.role]||roleMap.sales;
+      const initials = (u.name||u.email||'?').substring(0,2).toUpperCase();
+      return `<tr>
+        <td><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:var(--or-tint);color:var(--or);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${initials}</div><div><div style="font-weight:600">${u.name||'—'}</div><div style="font-size:12px;color:var(--text-3)">${u.email||'—'}</div></div></div></td>
+        <td><span style="background:${r.color}22;color:${r.color};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">${r.label}</span></td>
+        <td style="font-size:12px;color:var(--text-3)">${u.role==='admin'?'Tüm yetkiler':u.role==='atolye'?'Üretim maliyeti girişi':'Teklif oluştur, satış yap'}</td>
+        <td><span style="color:#4ADE80;font-size:12px;font-weight:600">● Aktif</span></td>
+        <td></td>
+      </tr>`;
+    }).join('');
+  }
+
+  const modal = document.getElementById('modal-user');
+  document.getElementById('btn-new-user').onclick = () => modal.style.display='flex';
+  document.getElementById('close-user').onclick = () => modal.style.display='none';
+  document.getElementById('cancel-user').onclick = () => modal.style.display='none';
+  document.getElementById('save-user').onclick = async () => {
+    const name=document.getElementById('u-name').value.trim(), email=document.getElementById('u-email').value.trim(), role=document.getElementById('u-role').value;
+    if (!name||!email) { alert('Ad ve e-posta zorunlu'); return; }
+    try { const ref=await addDoc(col,{name,email,role,active:true,createdBy:user.email}); users.push({id:ref.id,name,email,role,active:true}); }
+    catch(e) { users.push({id:Date.now()+'',name,email,role,active:true}); }
+    modal.style.display='none'; render();
+  };
+  load();
 });
 </script>
 </body>

@@ -76,14 +76,127 @@
       <div class="topbar-right" id="page-actions"></div>
     </div>
     <div class="page-content" id="page-body">
-      <div class="card"><div class="card-header"><div class="card-title">Stoklar</div></div><p style="color:var(--text-3);padding:20px 0">Bu sayfa Copilot ile geliştirmeye hazır.</p></div>
+<div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+  <button class="btn btn-primary" id="btn-stock-in"><i class="ti ti-arrow-down"></i> Stok Girişi</button>
+  <button class="btn btn-secondary" id="btn-stock-out"><i class="ti ti-arrow-up"></i> Stok Çıkışı</button>
+  <input type="text" class="form-input" id="stock-search" placeholder="Ürün ara..." style="width:200px;margin-left:auto">
+</div>
+
+<div class="stats-grid" style="margin-bottom:20px">
+  <div class="stat-card"><div class="stat-icon" style="background:rgba(232,93,4,.15);color:var(--or)"><i class="ti ti-packages"></i></div><div class="stat-val" id="st-total">0</div><div class="stat-label">Toplam Stok</div></div>
+  <div class="stat-card"><div class="stat-icon" style="background:rgba(74,222,128,.15);color:#4ADE80"><i class="ti ti-trending-up"></i></div><div class="stat-val" id="st-in">0</div><div class="stat-label">Bu Ay Giriş</div></div>
+  <div class="stat-card"><div class="stat-icon" style="background:rgba(248,113,113,.15);color:#F87171"><i class="ti ti-trending-down"></i></div><div class="stat-val" id="st-out">0</div><div class="stat-label">Bu Ay Çıkış</div></div>
+  <div class="stat-card"><div class="stat-icon" style="background:rgba(251,191,36,.15);color:#FBB724"><i class="ti ti-alert-triangle"></i></div><div class="stat-val" id="st-low">0</div><div class="stat-label">Düşük Stok</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><div class="card-title">Stok Durumu</div></div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Ürün</th><th>Kategori</th><th>Raf</th><th>Stok</th><th>Durum</th><th></th></tr></thead>
+      <tbody id="stock-tbody"><tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-3)">Yükleniyor...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <div class="card-header"><div class="card-title">Son Hareketler</div></div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Ürün</th><th>Tip</th><th>Adet</th><th>Açıklama</th><th>Tarih</th></tr></thead>
+      <tbody id="moves-tbody"><tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-3)">Hareket yok</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal-stock" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:16px;padding:28px;width:90%;max-width:440px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 id="modal-stock-title" style="font-size:16px;font-weight:700">Stok Hareketi</h3>
+      <button id="close-stock" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-3)"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-group"><label class="form-label">Ürün *</label><input class="form-input" id="st-product" placeholder="Ürün adı veya kodu"></div>
+    <div class="form-group"><label class="form-label">Adet *</label><input class="form-input" id="st-qty" type="number" value="1" min="1"></div>
+    <div class="form-group"><label class="form-label">Açıklama</label><input class="form-input" id="st-note" placeholder="Açıklama (opsiyonel)"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button id="cancel-stock" class="btn btn-secondary" style="flex:1">İptal</button>
+      <button id="save-stock" class="btn btn-primary" style="flex:1"><i class="ti ti-check"></i> Kaydet</button>
+    </div>
+  </div>
+</div>
     </div>
   </div>
 </div>
 <script type="module">
 import { initPage } from '/_common.js';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { app } from '/_common.js';
+
 initPage('stock', (user) => {
-  // Sayfa JS buraya yazılacak
+  const db = getFirestore(app);
+  const prodCol = collection(db, 'products');
+  const movCol = collection(db, 'stock_moves');
+  let moveType = 'in';
+
+  async function load() {
+    let products = [];
+    try {
+      const snap = await getDocs(prodCol);
+      products = snap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e) {
+      products = [{name:'Sırt Çantası M',category:'SC',shelf:'A1',stock:150,status:'normal'},{name:'Evrak Çantası',category:'EV',shelf:'B2',stock:3,status:'low'},{name:'Laptop Çantası',category:'LPT',shelf:'C1',stock:45,status:'normal'}];
+    }
+    const low = products.filter(p=>(p.stock||0)<10);
+    document.getElementById('st-total').textContent = products.reduce((a,p)=>a+(p.stock||0),0);
+    document.getElementById('st-low').textContent = low.length;
+    document.getElementById('stock-tbody').innerHTML = products.length
+      ? products.map(p=>{
+          const st = (p.stock||0)<10 ? "<span style='color:#F87171;font-weight:600;font-size:12px'>⚠ Kritik</span>" : (p.stock||0)<30 ? "<span style='color:#FBB724;font-weight:600;font-size:12px'>Düşük</span>" : "<span style='color:#4ADE80;font-weight:600;font-size:12px'>Normal</span>";
+          return `<tr><td><strong>${p.name||'—'}</strong></td><td>${p.category||'—'}</td><td>${p.shelf||'—'}</td><td style="font-weight:700;font-size:15px">${p.stock||0}</td><td>${st}</td><td><div style="display:flex;gap:4px"><button style="background:rgba(74,222,128,.15);color:#4ADE80;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px" data-id="${p.id}" data-name="${p.name}" class="btn-in">+</button><button style="background:rgba(248,113,113,.15);color:#F87171;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px" data-id="${p.id}" data-name="${p.name}" class="btn-out">-</button></div></td></tr>`;
+        }).join('')
+      : "<tr><td colspan='6' style='text-align:center;padding:30px;color:var(--text-3)'>Ürün yok</td></tr>";
+
+    document.querySelectorAll('.btn-in').forEach(b=>b.onclick=()=>openModal('in',b.dataset.name));
+    document.querySelectorAll('.btn-out').forEach(b=>b.onclick=()=>openModal('out',b.dataset.name));
+
+    try {
+      const msnap = await getDocs(query(movCol, orderBy('date','desc')));
+      const moves = msnap.docs.slice(0,20).map(d=>({id:d.id,...d.data()}));
+      document.getElementById('st-in').textContent = moves.filter(m=>m.type==='in').length;
+      document.getElementById('st-out').textContent = moves.filter(m=>m.type==='out').length;
+      document.getElementById('moves-tbody').innerHTML = moves.length
+        ? moves.map(m=>`<tr><td>${m.product||'—'}</td><td><span style="color:${m.type==='in'?'#4ADE80':'#F87171'};font-weight:600">${m.type==='in'?'▲ Giriş':'▼ Çıkış'}</span></td><td><strong>${m.qty||0}</strong></td><td>${m.note||'—'}</td><td>${m.date?.toDate?m.date.toDate().toLocaleDateString('tr-TR'):'—'}</td></tr>`).join('')
+        : "<tr><td colspan='5' style='text-align:center;padding:20px;color:var(--text-3)'>Hareket yok</td></tr>";
+    } catch(e) {}
+  }
+
+  function openModal(type, productName='') {
+    moveType = type;
+    document.getElementById('modal-stock-title').textContent = type==='in' ? 'Stok Girişi' : 'Stok Çıkışı';
+    document.getElementById('st-product').value = productName;
+    document.getElementById('st-qty').value = 1;
+    document.getElementById('st-note').value = '';
+    document.getElementById('modal-stock').style.display='flex';
+  }
+
+  document.getElementById('btn-stock-in').onclick = () => openModal('in');
+  document.getElementById('btn-stock-out').onclick = () => openModal('out');
+  document.getElementById('close-stock').onclick = () => document.getElementById('modal-stock').style.display='none';
+  document.getElementById('cancel-stock').onclick = () => document.getElementById('modal-stock').style.display='none';
+  document.getElementById('save-stock').onclick = async () => {
+    const product = document.getElementById('st-product').value.trim();
+    if (!product) { alert('Ürün giriniz'); return; }
+    try {
+      await addDoc(movCol, {product, type:moveType, qty:+document.getElementById('st-qty').value, note:document.getElementById('st-note').value, date:serverTimestamp(), by:user.email});
+    } catch(e) {}
+    document.getElementById('modal-stock').style.display='none'; load();
+  };
+  document.getElementById('stock-search').oninput = e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#stock-tbody tr').forEach(tr=>{ tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none'; });
+  };
+  load();
 });
 </script>
 </body>

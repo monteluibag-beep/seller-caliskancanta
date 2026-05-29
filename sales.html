@@ -75,15 +75,109 @@
       <div class="topbar-left"><div class="page-title">Satışlar</div></div>
       <div class="topbar-right" id="page-actions"></div>
     </div>
-    <div class="page-content" id="page-body">
-      <div class="card"><div class="card-header"><div class="card-title">Satışlar</div></div><p style="color:var(--text-3);padding:20px 0">Bu sayfa Copilot ile geliştirmeye hazır.</p></div>
+    <div class="page-content" id="page-body"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+  <button class="btn btn-primary" id="btn-new-sale"><i class="ti ti-plus"></i> Yeni Satış</button>
+  <input type="text" class="form-input" id="sale-search" placeholder="Müşteri veya ürün ara..." style="width:220px">
+</div>
+
+<div class="stats-grid" style="margin-bottom:20px">
+  <div class="stat-card"><div class="stat-icon" style="background:rgba(232,93,4,.15);color:var(--or)"><i class="ti ti-receipt"></i></div><div class="stat-val" id="stat-total">0</div><div class="stat-label">Toplam Satış</div></div>
+  <div class="stat-card"><div class="stat-icon" style="background:rgba(74,222,128,.15);color:#4ADE80"><i class="ti ti-check"></i></div><div class="stat-val" id="stat-done">0</div><div class="stat-label">Tamamlanan</div></div>
+  <div class="stat-card"><div class="stat-icon" style="background:rgba(251,191,36,.15);color:#FBB724"><i class="ti ti-clock"></i></div><div class="stat-val" id="stat-wait">0</div><div class="stat-label">Bekleyen</div></div>
+  <div class="stat-card"><div class="stat-icon" style="background:rgba(99,102,241,.15);color:#818CF8"><i class="ti ti-currency-lira"></i></div><div class="stat-val" id="stat-rev">₺0</div><div class="stat-label">Bu Ay Ciro</div></div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">Satış Listesi</div>
+    <select class="form-input" id="sale-filter" style="width:140px;padding:6px 10px">
+      <option value="">Tümü</option>
+      <option value="completed">Tamamlandı</option>
+      <option value="pending">Bekliyor</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>#</th><th>Müşteri</th><th>Ürün</th><th>Adet</th><th>Toplam</th><th>Tarih</th><th>Durum</th><th></th></tr></thead>
+      <tbody id="sales-tbody"><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-3)">Yükleniyor...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="modal-sale" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:16px;padding:28px;width:90%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="font-size:16px;font-weight:700">Yeni Satış</h3>
+      <button id="close-sale" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-3)"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="form-group"><label class="form-label">Müşteri Adı *</label><input class="form-input" id="s-customer" placeholder="Müşteri veya firma"></div>
+    <div class="form-group"><label class="form-label">Ürün</label><input class="form-input" id="s-product" placeholder="Ürün adı"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label class="form-label">Adet</label><input class="form-input" id="s-qty" type="number" value="1" min="1"></div>
+      <div class="form-group"><label class="form-label">Toplam (₺)</label><input class="form-input" id="s-total" type="number" value="0"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button id="cancel-sale" class="btn btn-secondary" style="flex:1">İptal</button>
+      <button id="save-sale" class="btn btn-primary" style="flex:1"><i class="ti ti-check"></i> Kaydet</button>
+    </div>
+  </div>
+</div>
     </div>
   </div>
 </div>
 <script type="module">
 import { initPage } from '/_common.js';
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { app } from '/_common.js';
+
 initPage('sales', (user) => {
-  // Sayfa JS buraya yazılacak
+  const db = getFirestore(app);
+  const col = collection(db, 'sales');
+  let allSales = [];
+
+  async function load() {
+    try {
+      const snap = await getDocs(query(col, orderBy('date','desc')));
+      allSales = snap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e) {
+      allSales = [
+        {customer:'Ahmet Kaya',product:'Sırt Çantası M',qty:50,total:56375,date:null,status:'completed'},
+        {customer:'Merve Toprak',product:'Evrak Çantası',qty:20,total:47500,date:null,status:'pending'},
+      ];
+    }
+    render(allSales); stats();
+  }
+
+  function render(list) {
+    const b = {completed:"<span style='color:#4ADE80;font-weight:600;font-size:12px'>✓ Tamamlandı</span>",pending:"<span style='color:#FBB724;font-weight:600;font-size:12px'>⏳ Bekliyor</span>"};
+    document.getElementById('sales-tbody').innerHTML = list.length
+      ? list.map((s,i)=>`<tr><td><b>#${1041+i}</b></td><td>${s.customer||'—'}</td><td>${s.product||'—'}</td><td>${s.qty||1}</td><td style="font-weight:600">₺${(s.total||0).toLocaleString('tr-TR')}</td><td>${s.date?.toDate?s.date.toDate().toLocaleDateString('tr-TR'):'—'}</td><td>${b[s.status]||b.pending}</td><td><button style="background:none;border:none;cursor:pointer;color:var(--text-3)" onclick=""><i class="ti ti-eye"></i></button></td></tr>`).join('')
+      : "<tr><td colspan='8' style='text-align:center;padding:30px;color:var(--text-3)'>Satış bulunamadı</td></tr>";
+  }
+
+  function stats() {
+    document.getElementById('stat-total').textContent = allSales.length;
+    document.getElementById('stat-done').textContent = allSales.filter(s=>s.status==='completed').length;
+    document.getElementById('stat-wait').textContent = allSales.filter(s=>s.status==='pending').length;
+    document.getElementById('stat-rev').textContent = '₺'+allSales.reduce((a,s)=>a+(s.total||0),0).toLocaleString('tr-TR');
+  }
+
+  const modal = document.getElementById('modal-sale');
+  document.getElementById('btn-new-sale').onclick = () => modal.style.display='flex';
+  document.getElementById('close-sale').onclick = () => modal.style.display='none';
+  document.getElementById('cancel-sale').onclick = () => modal.style.display='none';
+  document.getElementById('save-sale').onclick = async () => {
+    const customer = document.getElementById('s-customer').value.trim();
+    if (!customer) { alert('Müşteri adı giriniz'); return; }
+    try {
+      await addDoc(col, {customer, product:document.getElementById('s-product').value, qty:+document.getElementById('s-qty').value, total:+document.getElementById('s-total').value, status:'pending', date:serverTimestamp(), by:user.email});
+    } catch(e) {}
+    modal.style.display='none'; load();
+  };
+  document.getElementById('sale-filter').onchange = e => render(e.target.value?allSales.filter(s=>s.status===e.target.value):allSales);
+  document.getElementById('sale-search').oninput = e => { const q=e.target.value.toLowerCase(); render(q?allSales.filter(s=>(s.customer||'').toLowerCase().includes(q)):allSales); };
+  load();
 });
 </script>
 </body>

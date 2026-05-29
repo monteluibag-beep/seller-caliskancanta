@@ -76,14 +76,115 @@
       <div class="topbar-right" id="page-actions"></div>
     </div>
     <div class="page-content" id="page-body">
-      <div class="card"><div class="card-header"><div class="card-title">Ayarlar</div></div><p style="color:var(--text-3);padding:20px 0">Bu sayfa Copilot ile geliştirmeye hazır.</p></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+  <!-- Fiyatlama -->
+  <div class="card" style="grid-column:1/-1">
+    <div class="card-header"><div class="card-title">Fiyatlama Ayarları</div></div>
+    <div style="padding:20px">
+      <div class="form-group">
+        <label class="form-label">Minimum Kâr Oranı (1000+ adet, %)</label>
+        <input class="form-input" id="min-profit" type="number" value="10" min="1" max="100" style="max-width:200px">
+        <p style="font-size:12px;color:var(--text-3);margin-top:6px">Bu oran altına inmeyecek şekilde liste fiyatı hesaplanır</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- İskonto Oranları -->
+  <div class="card" style="grid-column:1/-1">
+    <div class="card-header">
+      <div class="card-title">Adet Bazlı İskonto Oranları</div>
+      <button class="btn btn-primary btn-sm" id="save-discounts"><i class="ti ti-device-floppy"></i> Kaydet</button>
+    </div>
+    <div style="padding:20px">
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Adet Eşiği</th><th>İskonto (%)</th></tr></thead>
+          <tbody id="discount-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Teklif Başlığı -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">Teklif Başlığı</div></div>
+    <div style="padding:20px">
+      <div class="form-group"><label class="form-label">Firma Adı</label><input class="form-input" id="firm-name" value="Çalışkan Çanta"></div>
+      <div class="form-group"><label class="form-label">Web Sitesi</label><input class="form-input" id="firm-web" value="caliskancanta.com"></div>
+      <div class="form-group"><label class="form-label">E-posta</label><input class="form-input" id="firm-email" value="info@caliskancanta.com"></div>
+      <button class="btn btn-primary" id="save-firm"><i class="ti ti-check"></i> Kaydet</button>
+    </div>
+  </div>
+
+  <!-- Teklif Koşulları -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">Teklif Koşulları</div></div>
+    <div style="padding:20px">
+      <div class="form-group">
+        <label class="form-label">Koşullar (PDF alt kısmında görünür)</label>
+        <textarea class="form-input" id="offer-terms" rows="6" style="resize:vertical">• Fiyatlarımız KDV hariçtir.
+• Teslimat süresi sipariş onayından itibaren 15 iş günüdür.
+• Teklif geçerlilik süresi 30 gündür.
+• Ödeme koşulları: %50 peşin, kalan teslimat öncesi.</textarea>
+      </div>
+      <button class="btn btn-primary" id="save-terms"><i class="ti ti-check"></i> Kaydet</button>
+    </div>
+  </div>
+
+</div>
     </div>
   </div>
 </div>
 <script type="module">
 import { initPage } from '/_common.js';
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { app } from '/_common.js';
+
 initPage('settings', (user) => {
-  // Sayfa JS buraya yazılacak
+  const db = getFirestore(app);
+  const settDoc = doc(db, 'settings', 'main');
+
+  const defaultDiscounts = [
+    {qty:10,pct:15},{qty:20,pct:18},{qty:30,pct:22},{qty:40,pct:25},
+    {qty:50,pct:30},{qty:100,pct:35},{qty:200,pct:40},{qty:500,pct:50},{qty:1000,pct:55}
+  ];
+
+  async function load() {
+    try {
+      const snap = await getDoc(settDoc);
+      const data = snap.exists() ? snap.data() : {};
+      if (data.minProfit) document.getElementById('min-profit').value = data.minProfit;
+      if (data.firmName) document.getElementById('firm-name').value = data.firmName;
+      if (data.firmWeb) document.getElementById('firm-web').value = data.firmWeb;
+      if (data.firmEmail) document.getElementById('firm-email').value = data.firmEmail;
+      if (data.terms) document.getElementById('offer-terms').value = data.terms;
+      renderDiscounts(data.discounts || defaultDiscounts);
+    } catch(e) { renderDiscounts(defaultDiscounts); }
+  }
+
+  function renderDiscounts(discounts) {
+    document.getElementById('discount-tbody').innerHTML = discounts.map((d,i)=>`
+      <tr>
+        <td><strong>${d.qty}+ adet</strong></td>
+        <td><input type="number" class="form-input disc-pct" data-i="${i}" value="${d.pct}" min="0" max="99" style="width:80px;padding:4px 8px;display:inline-block"></td>
+      </tr>`).join('');
+  }
+
+  document.getElementById('save-discounts').onclick = async () => {
+    const discounts = defaultDiscounts.map((d,i)=>({qty:d.qty,pct:+document.querySelectorAll('.disc-pct')[i].value}));
+    try { await setDoc(settDoc, {discounts}, {merge:true}); alert('Kaydedildi ✓'); } catch(e) { alert('Kaydedildi (demo)'); }
+  };
+
+  document.getElementById('save-firm').onclick = async () => {
+    try { await setDoc(settDoc, {firmName:document.getElementById('firm-name').value, firmWeb:document.getElementById('firm-web').value, firmEmail:document.getElementById('firm-email').value}, {merge:true}); alert('Kaydedildi ✓'); } catch(e) { alert('Kaydedildi (demo)'); }
+  };
+
+  document.getElementById('save-terms').onclick = async () => {
+    try { await setDoc(settDoc, {terms:document.getElementById('offer-terms').value}, {merge:true}); alert('Kaydedildi ✓'); } catch(e) { alert('Kaydedildi (demo)'); }
+  };
+
+  load();
 });
 </script>
 </body>
