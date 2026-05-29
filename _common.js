@@ -79,7 +79,11 @@ function initSidebarCollapse() {
     brand.innerHTML = `
       <div class="brand-info">${existingHTML}</div>
       <button class="sidebar-toggle" id="sidebar-toggle" title="Daralt / Genişlet">
-        <i class="ti ti-chevrons-left"></i>
+        <svg class="hamburger-icon" width="18" height="14" viewBox="0 0 18 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect class="line line-1" x="0" y="0"  width="18" height="2" rx="1" fill="currentColor"/>
+          <rect class="line line-2" x="0" y="6"  width="14" height="2" rx="1" fill="currentColor"/>
+          <rect class="line line-3" x="0" y="12" width="10" height="2" rx="1" fill="currentColor"/>
+        </svg>
       </button>`;
   }
 

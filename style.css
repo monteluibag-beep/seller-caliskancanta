@@ -890,15 +890,12 @@ select.form-input { cursor: pointer; }
   color: rgba(255,255,255,.9);
 }
 
-.sidebar-toggle i {
-  transition: transform .22s ease;
-  display: block;
-}
+
 
 /* ── COLLAPSED ── */
 .sidebar.collapsed { width: var(--sidebar-collapsed-w); }
 
-.sidebar.collapsed .sidebar-toggle i { transform: rotate(180deg); }
+
 
 .sidebar.collapsed .sidebar-brand {
   justify-content: center;
@@ -957,3 +954,24 @@ select.form-input { cursor: pointer; }
 .sidebar.collapsed .sidebar-logout-btn { justify-content: center; padding: 8px 0; }
 .sidebar.collapsed .sidebar-logout-btn span { display: none; }
 .sidebar.collapsed .sidebar-logout-btn i { font-size: 17px; }
+
+/* Hamburger SVG ikon */
+.hamburger-icon {
+  display: block;
+  color: rgba(255,255,255,.5);
+  transition: color .15s;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle:hover .hamburger-icon {
+  color: rgba(255,255,255,.95);
+}
+
+.hamburger-icon .line {
+  transform-origin: left center;
+  transition: width .22s ease, opacity .22s ease, transform .22s ease;
+}
+
+/* Collapsed — çizgiler eşitleniyor (kapalı menü = eşit çizgiler) */
+.sidebar.collapsed .hamburger-icon .line-2 { width: 18px; }
+.sidebar.collapsed .hamburger-icon .line-3 { width: 18px; }
