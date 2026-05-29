@@ -1,6 +1,5 @@
 import { requireAuth, logout } from './firebase.js';
 
-// Döviz kurları
 let rates = { USD: 0, EUR: 0, GBP: 0 };
 let prevRates = { USD: 0, EUR: 0, GBP: 0 };
 
@@ -36,30 +35,17 @@ function updateRateUI() {
   if (t) t.textContent = timeStr + ' güncellendi';
 }
 
-// 1. AUTH GUARD
 requireAuth((user) => {
-  // Kullanıcı bilgisi — tüm ID varyantları
   const displayName = user.displayName || user.email.split('@')[0].toUpperCase();
   const initials = displayName.charAt(0).toUpperCase();
-
-  ['user-av-drawer', 'user-av-sidebar'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.textContent = initials;
-  });
-  ['user-name-drawer', 'user-name-sidebar'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.textContent = displayName;
-  });
-  ['user-email-drawer', 'user-email-sidebar'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.textContent = user.email;
-  });
-
+  ['user-av-drawer', 'user-av-sidebar'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = initials; });
+  ['user-name-drawer', 'user-name-sidebar'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = displayName; });
+  ['user-email-drawer', 'user-email-sidebar'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = user.email; });
   initDate();
-
-  // Döviz kurlarını başlat
   fetchRates();
   setInterval(fetchRates, 5 * 60 * 1000);
 });
 
-// 2. TARİH
 function initDate() {
   const d = new Date();
   const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
@@ -68,7 +54,6 @@ function initDate() {
   if (el) el.textContent = d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() + ', ' + days[d.getDay()];
 }
 
-// 3. DRAWER
 function openDrawer() {
   document.getElementById('drawer')?.classList.add('open');
   document.getElementById('drawer-overlay')?.classList.add('show');
@@ -78,15 +63,12 @@ function closeDrawer() {
   document.getElementById('drawer-overlay')?.classList.remove('show');
 }
 
-// 4. EVENT LİSTENER'LAR
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-open-drawer-mob')?.addEventListener('click', openDrawer);
   document.getElementById('btn-open-drawer-bottom')?.addEventListener('click', openDrawer);
   document.getElementById('btn-close-drawer')?.addEventListener('click', closeDrawer);
   document.getElementById('drawer-overlay')?.addEventListener('click', closeDrawer);
   document.querySelectorAll('.drawer .nav-item').forEach(item => item.addEventListener('click', closeDrawer));
-
-  // Çıkış — hem class hem data-action
   document.querySelectorAll('.btn-logout-trigger, [data-action="doLogout"]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -94,18 +76,15 @@ document.addEventListener('DOMContentLoaded', () => {
       logout().catch(() => { window.location.href = '/index.html'; });
     });
   });
-});
 
-// Hamburger
-// Sidebar collapse toggle
-(function() {
-  var s = document.querySelector(".sidebar");
-  if (!s) return;
-  var btn = document.getElementById("sidebar-toggle");
-  if (!btn) return;
-  if (localStorage.getItem("sb-collapsed") === "1") s.classList.add("collapsed");
-  btn.addEventListener("click", function() {
-    s.classList.toggle("collapsed");
-    localStorage.setItem("sb-collapsed", s.classList.contains("collapsed") ? "1" : "0");
-  });
-})();
+  // Hamburger toggle
+  const s = document.querySelector('.sidebar');
+  const btn = document.getElementById('sidebar-toggle');
+  if (s && btn) {
+    if (localStorage.getItem('sb-collapsed') === '1') s.classList.add('collapsed');
+    btn.addEventListener('click', () => {
+      s.classList.toggle('collapsed');
+      localStorage.setItem('sb-collapsed', s.classList.contains('collapsed') ? '1' : '0');
+    });
+  }
+});
