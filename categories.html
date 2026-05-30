@@ -148,10 +148,57 @@ initPage('categories', (user) => {
   };
 
   const modal = document.getElementById('modal-cat');
-  document.getElementById('btn-new-cat').onclick = () => { document.getElementById('cat-name').value=''; document.getElementById('cat-prefix').value=''; document.getElementById('cat-desc').value=''; modal.style.display='flex'; };
+
   document.getElementById('close-cat').onclick = () => modal.style.display='none';
   document.getElementById('cancel-cat').onclick = () => modal.style.display='none';
-  document.getElementById('cat-prefix').oninput = e => e.target.value=e.target.value.toUpperCase();
+  // Kategori adından otomatik prefix üret
+  function generatePrefix(name) {
+    name = name.trim();
+    if (!name) return '';
+    
+    // Türkçe karakterleri dönüştür
+    const tr = {'ç':'C','Ç':'C','ğ':'G','Ğ':'G','ı':'I','İ':'I','ö':'O','Ö':'O','ş':'S','Ş':'S','ü':'U','Ü':'U'};
+    name = name.replace(/[çÇğĞıİöÖşŞüÜ]/g, c => tr[c]||c);
+    
+    const words = name.split(/\s+/).filter(w => w.length > 0);
+    let prefix = '';
+    
+    if (words.length === 1) {
+      // Tek kelime: ilk 2-3 harf
+      prefix = words[0].substring(0, 3).toUpperCase();
+    } else {
+      // Birden fazla kelime: her kelimenin baş harfi
+      prefix = words.map(w => w[0]).join('').toUpperCase();
+      // 4 harften fazlaysa kırp
+      if (prefix.length > 4) prefix = prefix.substring(0, 4);
+    }
+    
+    return prefix;
+  }
+
+  document.getElementById('cat-name').addEventListener('input', (e) => {
+    const prefixInput = document.getElementById('cat-prefix');
+    // Kullanıcı prefix'i elle değiştirmediyse otomatik doldur
+    if (!prefixInput.dataset.manualEdit) {
+      prefixInput.value = generatePrefix(e.target.value);
+    }
+  });
+
+  document.getElementById('cat-prefix').addEventListener('input', (e) => {
+    e.target.value = e.target.value.toUpperCase();
+    // Kullanıcı elle değiştirdi - artık otomatik doldurma
+    e.target.dataset.manualEdit = e.target.value ? '1' : '';
+  });
+  
+  // Modal açılınca manualEdit sıfırla
+  document.getElementById('btn-new-cat').onclick = () => {
+    document.getElementById('cat-name').value='';
+    document.getElementById('cat-prefix').value='';
+    delete document.getElementById('cat-prefix').dataset.manualEdit;
+    document.getElementById('cat-desc').value='';
+    modal.style.display='flex';
+    document.getElementById('cat-name').focus();
+  };
   document.getElementById('save-cat').onclick = async () => {
     const name=document.getElementById('cat-name').value.trim(), prefix=document.getElementById('cat-prefix').value.trim();
     if (!name||!prefix) { alert('Ad ve önek zorunlu'); return; }
