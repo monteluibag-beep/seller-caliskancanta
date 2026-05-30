@@ -388,25 +388,56 @@ initPage('offers', (user) => {
       const img = it.photo
         ? '<img src="'+it.photo+'" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0">'
         : '<div style="width:52px;height:52px;border-radius:8px;background:var(--or-tint);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px">🎒</div>';
-      return '<div style="display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border)">'+
-        img +
-        '<div style="flex:1;min-width:0">'+
-          '<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it.name+'</div>'+
-          '<div style="font-size:11px;color:var(--text-3);margin-top:1px">'+it.code+' · %'+it.disc+' iskonto</div>'+
-          '<div style="display:flex;align-items:center;gap:6px;margin-top:6px">'+
-            '<button onclick="chQty('+i+',-1)" style="width:26px;height:26px;border-radius:6px;background:var(--bg);border:1px solid var(--border);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text-2)">−</button>'+
-            '<span style="font-size:14px;font-weight:700;min-width:28px;text-align:center">'+it.qty+'</span>'+
-            '<button onclick="chQty('+i+',1)" style="width:26px;height:26px;border-radius:6px;background:var(--bg);border:1px solid var(--border);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text-2)">+</button>'+
-            '<span style="font-size:11px;color:var(--text-3)">× '+formatPrice(it.price)+'</span>'+
+      // Kar hesabı
+      const cost = it.cost || 0;
+      const unitPrice = it.price * (1 - it.disc/100);
+      const profit = cost > 0 ? unitPrice - cost : null;
+      const profitPct = cost > 0 ? ((profit/cost)*100) : null;
+      const profitColor = profitPct === null ? 'var(--text-3)' : profitPct >= 30 ? '#16A34A' : profitPct >= 15 ? '#D97706' : '#DC2626';
+      const profitLabel = profitPct === null ? 'Maliyet girilmemiş' : '%'+profitPct.toFixed(1)+' kar · Birim kazanç: '+formatPrice(profit);
+
+      return '<div style="border-bottom:1px solid var(--border)">'+
+        '<div style="display:flex;align-items:center;gap:12px;padding:12px 18px">'+
+          img +
+          '<div style="flex:1;min-width:0">'+
+            '<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it.name+'</div>'+
+            '<div style="font-size:11px;color:var(--text-3);margin-top:1px">'+it.code+' · %'+it.disc+' iskonto</div>'+
+            '<div style="display:flex;align-items:center;gap:6px;margin-top:6px">'+
+              '<button onclick="chQty('+i+',-1)" style="width:26px;height:26px;border-radius:6px;background:var(--bg);border:1px solid var(--border);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text-2)">−</button>'+
+              '<span style="font-size:14px;font-weight:700;min-width:28px;text-align:center">'+it.qty+'</span>'+
+              '<button onclick="chQty('+i+',1)" style="width:26px;height:26px;border-radius:6px;background:var(--bg);border:1px solid var(--border);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text-2)">+</button>'+
+              '<span style="font-size:11px;color:var(--text-3)">× '+formatPrice(unitPrice)+'</span>'+
+            '</div>'+
+          '</div>'+
+          '<div style="text-align:right;flex-shrink:0">'+
+            '<div style="font-size:14px;font-weight:800;color:var(--or)">'+formatPrice(it.total)+'</div>'+
+            '<button onclick="rmItem('+i+')" style="background:none;border:none;cursor:pointer;color:#F87171;font-size:13px;margin-top:4px"><i class="ti ti-trash"></i> Kaldır</button>'+
           '</div>'+
         '</div>'+
-        '<div style="text-align:right;flex-shrink:0">'+
-          '<div style="font-size:14px;font-weight:800;color:var(--or)">'+formatPrice(it.total)+'</div>'+
-          '<button onclick="rmItem('+i+')" style="background:none;border:none;cursor:pointer;color:#F87171;font-size:13px;margin-top:4px"><i class="ti ti-trash"></i> Kaldır</button>'+
+        // Sadece hazırlayana görünen kar analizi satırı
+        '<div style="margin:0 18px 10px;padding:8px 12px;background:rgba(0,0,0,.03);border-radius:8px;border-left:3px solid '+profitColor+';display:flex;align-items:center;justify-content:space-between;gap:10px">'+
+          '<div>'+
+            '<div style="font-size:11px;font-weight:600;color:'+profitColor+'">'+profitLabel+'</div>'+
+            (cost>0 ? '<div style="font-size:10px;color:var(--text-3);margin-top:2px">Maliyet: '+formatPrice(cost)+' · Toplam kar: '+formatPrice(profit*it.qty)+'</div>' : '<div style="font-size:10px;color:var(--text-3);margin-top:2px">Ürüne maliyet girin</div>')+
+          '</div>'+
+          '<div style="display:flex;align-items:center;gap:6px;flex-shrink:0">'+
+            '<input type="number" id="price-edit-'+i+'" value="'+unitPrice.toFixed(2)+'" style="width:80px;padding:4px 8px;font-size:12px;border:1px solid var(--border);border-radius:6px;text-align:right" onchange="updatePrice('+i+', this.value)">'+
+            '<span style="font-size:10px;color:var(--text-3)">birim fiyat</span>'+
+          '</div>'+
         '</div>'+
       '</div>';
     }).join('');
   }
+
+  // Fiyat güncelle
+  window.updatePrice = (i, val) => {
+    const newPrice = parseFloat(val);
+    if (isNaN(newPrice) || newPrice <= 0) return;
+    offerItems[i].price = newPrice;
+    offerItems[i].disc = 0; // Manuel fiyat girilince iskonto sıfırla
+    offerItems[i].total = newPrice * offerItems[i].qty;
+    renderItems(); updateTotals();
+  };
 
   window.chQty = (i, d) => {
     offerItems[i].qty = Math.max(1, offerItems[i].qty + d);
