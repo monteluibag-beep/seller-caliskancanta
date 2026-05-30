@@ -321,9 +321,18 @@ initPage('users', (currentUser) => {
         // Yeni kullanıcı
         if (!password || password.length < 6) { toast('Şifre en az 6 karakter', '#F87171'); btn.textContent='Kaydet'; btn.disabled=false; return; }
         const { getAuth, createUserWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-        const auth2 = getAuth(app);
+        const { initializeApp: initApp2 } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+        const app2 = initApp2({
+          apiKey: "AIzaSyAJ-Fy5Qai4gAFBa55cGer8O3l8neMy2zI",
+          authDomain: "caliskancanta-seller.firebaseapp.com",
+          projectId: "caliskancanta-seller"
+        }, "secondary");
+        const auth2 = getAuth(app2);
         const cred = await createUserWithEmailAndPassword(auth2, email, password);
         await updateProfile(cred.user, {displayName: name});
+        await cred.user.getIdToken(); // token al
+        await auth2.signOut(); // ikinci oturumu kapat - admin oturumu bozulmaz
+        
         const ref = await addDoc(col, {name, email, role, uid: cred.user.uid, active:true, createdBy:currentUser.email});
         users.push({id:ref.id, name, email, role, active:true});
         toast('Kullanıcı oluşturuldu ✓');
