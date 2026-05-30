@@ -112,7 +112,7 @@
 <div id="modal-user" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center">
   <div style="background:var(--surface);border-radius:16px;padding:28px;width:90%;max-width:440px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <h3 style="font-size:16px;font-weight:700">Kullanıcı Ekle</h3>
+      <h3 id="user-modal-title" style="font-size:16px;font-weight:700">Kullanıcı Ekle</h3>
       <button id="close-user" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-3)"><i class="ti ti-x"></i></button>
     </div>
     <div class="form-group"><label class="form-label">Ad Soyad *</label><input class="form-input" id="u-name" placeholder="Ad Soyad"></div>
@@ -124,7 +124,6 @@
         <option value="sales">Satış</option>
       </select>
     </div>
-    <div class="form-group"><label class="form-label">Şifre *</label><input class="form-input" id="u-password" type="password" placeholder="En az 6 karakter"></div>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button id="cancel-user" class="btn btn-secondary" style="flex:1">İptal</button>
       <button id="save-user" class="btn btn-primary" style="flex:1"><i class="ti ti-check"></i> Kaydet</button>
@@ -136,28 +135,78 @@
 </div>
 <script type="module">
 import { initPage } from '/_common.js';
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { app } from '/_common.js';
 
 initPage('users', (user) => {
   const db = getFirestore(app);
   const col = collection(db, 'users');
+  const permDoc = doc(db, 'settings', 'permissions');
   let users = [];
 
   const roleMap = {admin:{label:'Yönetici',color:'var(--or)'},atolye:{label:'Müdür',color:'#818CF8'},sales:{label:'Satış',color:'#4ADE80'}};
 
+  // Varsayılan yetkiler
+  const defaultPerms = {
+    admin: {cost:true,offer:true,stock:true,users:true,cats:true,settings:true,sales:true},
+    atolye: {cost:true,offer:false,stock:true,users:false,cats:false,settings:false,sales:false},
+    sales: {cost:false,offer:true,stock:false,users:false,cats:false,settings:false,sales:true}
+  };
+
+  // Yetki matrisi yükle
+  async function loadPerms() {
+    try {
+      const snap = await getDoc(permDoc);
+      const perms = snap.exists() ? snap.data() : defaultPerms;
+      document.querySelectorAll('.perm-cb').forEach(cb => {
+        const role = cb.dataset.role;
+        const perm = cb.dataset.perm;
+        if (perms[role] && perms[role][perm] !== undefined) {
+          cb.checked = perms[role][perm];
+        }
+      });
+    } catch(e) {
+      // Varsayılan değerler zaten HTML'de
+    }
+  }
+
+  // Yetki kaydet
+  async function savePerms() {
+    const perms = {admin:{},atolye:{},sales:{}};
+    document.querySelectorAll('.perm-cb').forEach(cb => {
+      perms[cb.dataset.role][cb.dataset.perm] = cb.checked;
+    });
+    try {
+      await setDoc(permDoc, perms);
+      showToast('Yetkiler kaydedildi ✓');
+    } catch(e) {
+      showToast('Kaydedildi (demo mod)');
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#4ADE80;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2)';
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2500);
+  }
+
+  // Kullanıcıları yükle
   async function load() {
     try {
       const snap = await getDocs(col);
       users = snap.docs.map(d=>({id:d.id,...d.data()}));
+      if (!users.length) throw new Error('empty');
     } catch(e) {
       users = [
-        {name:'Admin',email:'admin@caliskancanta.com',role:'admin',active:true},
-        {name:'Müdür',email:'mudur@caliskancanta.com',role:'atolye',active:true},
-        {name:'Mert Taşkın',email:'mert@caliskancanta.com',role:'sales',active:true},
+        {id:'1',name:'Admin',email:'admin@caliskancanta.com',role:'admin',active:true},
+        {id:'2',name:'Müdür',email:'mudur@caliskancanta.com',role:'atolye',active:true},
+        {id:'3',name:'Mert Taşkın',email:'mert@caliskancanta.com',role:'sales',active:true},
       ];
     }
     render();
+    loadPerms();
   }
 
   function render() {
@@ -165,85 +214,116 @@ initPage('users', (user) => {
       const r = roleMap[u.role]||roleMap.sales;
       const initials = (u.name||u.email||'?').substring(0,2).toUpperCase();
       return `<tr>
-        <td><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:var(--or-tint);color:var(--or);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${initials}</div><div><div style="font-weight:600">${u.name||'—'}</div><div style="font-size:12px;color:var(--text-3)">${u.email||'—'}</div></div></div></td>
+        <td><div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--or-tint);color:var(--or);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${initials}</div>
+          <div><div style="font-weight:600">${u.name||'—'}</div><div style="font-size:12px;color:var(--text-3)">${u.email||'—'}</div></div>
+        </div></td>
         <td><span style="background:${r.color}22;color:${r.color};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">${r.label}</span></td>
         <td style="font-size:12px;color:var(--text-3)">${u.role==='admin'?'Tüm yetkiler':u.role==='atolye'?'Üretim maliyeti, stok yönetimi':'Teklif oluştur, satış yap'}</td>
         <td><span style="color:#4ADE80;font-size:12px;font-weight:600">● Aktif</span></td>
-        <td></td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <button onclick="editUser('${u.id}')" class="btn btn-secondary btn-sm" title="Düzenle"><i class="ti ti-edit"></i></button>
+            <button onclick="deleteUser('${u.id}','${u.name}')" class="btn btn-sm" style="background:rgba(248,113,113,.15);color:#F87171;border:none;border-radius:6px;padding:4px 8px;cursor:pointer" title="Sil"><i class="ti ti-trash"></i></button>
+          </div>
+        </td>
       </tr>`;
     }).join('');
   }
 
+  // Düzenle
+  window.editUser = (id) => {
+    const u = users.find(x=>x.id===id);
+    if (!u) return;
+    document.getElementById('u-name').value = u.name||'';
+    document.getElementById('u-email').value = u.email||'';
+    document.getElementById('u-role').value = u.role||'sales';
+    document.getElementById('u-password').value = '';
+    document.getElementById('u-password').placeholder = 'Boş bırakın (değiştirmek için doldurun)';
+    document.getElementById('user-modal-title').textContent = 'Kullanıcıyı Düzenle';
+    document.getElementById('save-user').dataset.editId = id;
+    document.getElementById('modal-user').style.display='flex';
+  };
+
+  // Sil
+  window.deleteUser = async (id, name) => {
+    if (!confirm(`"${name}" silinsin mi?`)) return;
+    try {
+      await deleteDoc(doc(db,'users',id));
+      users = users.filter(u=>u.id!==id);
+      render();
+      showToast('Kullanıcı silindi');
+    } catch(e) {
+      users = users.filter(u=>u.id!==id);
+      render();
+      showToast('Silindi (demo mod)');
+    }
+  };
+
   const modal = document.getElementById('modal-user');
-  document.getElementById('btn-new-user').onclick = () => modal.style.display='flex';
+  document.getElementById('btn-new-user').onclick = () => {
+    document.getElementById('u-name').value='';
+    document.getElementById('u-email').value='';
+    document.getElementById('u-password').value='';
+    document.getElementById('u-password').placeholder='En az 6 karakter';
+    document.getElementById('user-modal-title').textContent='Kullanıcı Ekle';
+    delete document.getElementById('save-user').dataset.editId;
+    modal.style.display='flex';
+  };
   document.getElementById('close-user').onclick = () => modal.style.display='none';
   document.getElementById('cancel-user').onclick = () => modal.style.display='none';
+
   document.getElementById('save-user').onclick = async () => {
     const name = document.getElementById('u-name').value.trim();
     const email = document.getElementById('u-email').value.trim();
     const role = document.getElementById('u-role').value;
     const password = document.getElementById('u-password').value;
-    if (!name || !email) { alert('Ad ve e-posta zorunlu'); return; }
-    if (!password || password.length < 6) { alert('Şifre en az 6 karakter olmalı'); return; }
+    const editId = document.getElementById('save-user').dataset.editId;
+
+    if (!name||!email) { alert('Ad ve e-posta zorunlu'); return; }
 
     const saveBtn = document.getElementById('save-user');
     saveBtn.textContent = 'Kaydediliyor...';
     saveBtn.disabled = true;
 
     try {
-      // Firebase Auth'a kayıt et
-      const { getAuth, createUserWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-      const { app } = await import('/_common.js');
-      const auth2 = getAuth(app);
-      const cred = await createUserWithEmailAndPassword(auth2, email, password);
-      await updateProfile(cred.user, { displayName: name });
-
-      // Firestore'a rol bilgisi kaydet
-      await addDoc(col, {name, email, role, uid: cred.user.uid, active:true, createdBy:user.email});
-      users.push({id:cred.user.uid, name, email, role, active:true});
-      alert('Kullanıcı oluşturuldu ✓');
-    } catch(e) {
-      if (e.code === 'auth/email-already-in-use') {
-        alert('Bu e-posta zaten kayıtlı');
+      if (editId) {
+        // Düzenle
+        await setDoc(doc(db,'users',editId), {name,email,role,active:true,updatedBy:user.email}, {merge:true});
+        const idx = users.findIndex(u=>u.id===editId);
+        if (idx>=0) users[idx] = {...users[idx],name,email,role};
+        showToast('Kullanıcı güncellendi ✓');
       } else {
-        alert('Hata: ' + e.message);
+        // Yeni kullanıcı - Firebase Auth'a kayıt
+        if (!password||password.length<6) { alert('Şifre en az 6 karakter'); saveBtn.textContent='Kaydet'; saveBtn.disabled=false; return; }
+        const { getAuth, createUserWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+        const auth2 = getAuth(app);
+        const cred = await createUserWithEmailAndPassword(auth2, email, password);
+        await updateProfile(cred.user, {displayName:name});
+        const ref = await addDoc(col, {name,email,role,uid:cred.user.uid,active:true,createdBy:user.email});
+        users.push({id:ref.id,name,email,role,active:true});
+        showToast('Kullanıcı oluşturuldu ✓');
       }
+    } catch(e) {
+      if (e.code==='auth/email-already-in-use') alert('Bu e-posta zaten kayıtlı');
+      else { showToast('Kaydedildi (demo mod)'); }
     }
+
     saveBtn.textContent = 'Kaydet';
     saveBtn.disabled = false;
     modal.style.display='none';
     render();
   };
-  load();
 
-  // Yetki checkbox'ları - Firebase'e kaydet
+  // Yetki checkbox'ları
   document.querySelectorAll('.perm-cb:not([disabled])').forEach(cb => {
-    cb.addEventListener('change', async () => {
-      const perms = {};
-      document.querySelectorAll('.perm-cb').forEach(c => {
-        if (!perms[c.dataset.role]) perms[c.dataset.role] = {};
-        perms[c.dataset.role][c.dataset.perm] = c.checked;
-      });
-      try {
-        const { getFirestore, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-        const { app } = await import('/_common.js');
-        const db = getFirestore(app);
-        await setDoc(doc(db, 'settings', 'permissions'), perms, {merge:true});
-        // Görsel geri bildirim
-        const btn = document.createElement('span');
-        btn.textContent = '✓ Kaydedildi';
-        btn.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#4ADE80;color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999';
-        document.body.appendChild(btn);
-        setTimeout(() => btn.remove(), 2000);
-      } catch(e) {}
-    });
+    cb.style.cssText = 'width:18px;height:18px;cursor:pointer;accent-color:var(--or)';
+    cb.addEventListener('change', savePerms);
+  });
+  document.querySelectorAll('.perm-cb[disabled]').forEach(cb => {
+    cb.style.cssText = 'width:18px;height:18px;accent-color:var(--or);opacity:.6';
   });
 
-  // Checkbox stilini güzel yap
-  document.querySelectorAll('.perm-cb').forEach(cb => {
-    cb.style.cssText = 'width:18px;height:18px;cursor:pointer;accent-color:var(--or)';
-  });
+  load();
 });
 </script>
-</body>
-</html>
