@@ -91,17 +91,18 @@
 </div>
 
 <div class="card">
-  <div class="card-header"><div class="card-title">Yetki Matrisi</div></div>
+  <div class="card-header"><div class="card-title">Yetki Matrisi</div><div style="font-size:12px;color:var(--text-3)">Admin sütunu değiştirilemez. Diğer roller için tikleyin, otomatik kaydedilir.</div></div>
   <div class="table-wrap">
     <table class="data-table">
-      <thead><tr><th>Yetki</th><th>Yönetici</th><th>Atölye</th><th>Satış</th></tr></thead>
-      <tbody>
-        <tr><td>Üretim maliyeti gir</td><td>✅</td><td>✅</td><td>❌</td></tr>
-        <tr><td>Teklif hazırla</td><td>✅</td><td>❌</td><td>✅</td></tr>
-        <tr><td>Stok düzenle</td><td>✅</td><td>✅</td><td>❌</td></tr>
-        <tr><td>Kullanıcı ekle</td><td>✅</td><td>❌</td><td>❌</td></tr>
-        <tr><td>Kategori ekle</td><td>✅</td><td>❌</td><td>❌</td></tr>
-        <tr><td>Ayarları değiştir</td><td>✅</td><td>❌</td><td>❌</td></tr>
+      <thead><tr><th>Yetki</th><th>Yönetici</th><th>Müdür</th><th>Satış</th></tr></thead>
+      <tbody id="perm-tbody">
+        <tr><td>Üretim maliyeti gir</td><td><input type="checkbox" class="perm-cb" data-role="admin" data-perm="cost" checked disabled></td><td><input type="checkbox" class="perm-cb" data-role="atolye" data-perm="cost" checked></td><td><input type="checkbox" class="perm-cb" data-role="sales" data-perm="cost"></td></tr>
+        <tr><td>Teklif hazırla</td><td><input type="checkbox" class="perm-cb" data-role="admin" data-perm="offer" checked disabled></td><td><input type="checkbox" class="perm-cb" data-role="atolye" data-perm="offer"></td><td><input type="checkbox" class="perm-cb" data-role="sales" data-perm="offer" checked></td></tr>
+        <tr><td>Stok düzenle</td><td><input type="checkbox" class="perm-cb" data-role="admin" data-perm="stock" checked disabled></td><td><input type="checkbox" class="perm-cb" data-role="atolye" data-perm="stock" checked></td><td><input type="checkbox" class="perm-cb" data-role="sales" data-perm="stock"></td></tr>
+        <tr><td>Kullanıcı ekle</td><td><input type="checkbox" class="perm-cb" data-role="admin" data-perm="users" checked disabled></td><td><input type="checkbox" class="perm-cb" data-role="atolye" data-perm="users"></td><td><input type="checkbox" class="perm-cb" data-role="sales" data-perm="users"></td></tr>
+        <tr><td>Kategori ekle</td><td><input type="checkbox" class="perm-cb" data-role="admin" data-perm="cats" checked disabled></td><td><input type="checkbox" class="perm-cb" data-role="atolye" data-perm="cats"></td><td><input type="checkbox" class="perm-cb" data-role="sales" data-perm="cats"></td></tr>
+        <tr><td>Ayarları değiştir</td><td><input type="checkbox" class="perm-cb" data-role="admin" data-perm="settings" checked disabled></td><td><input type="checkbox" class="perm-cb" data-role="atolye" data-perm="settings"></td><td><input type="checkbox" class="perm-cb" data-role="sales" data-perm="settings"></td></tr>
+        <tr><td>Satış yap</td><td><input type="checkbox" class="perm-cb" data-role="admin" data-perm="sales" checked disabled></td><td><input type="checkbox" class="perm-cb" data-role="atolye" data-perm="sales"></td><td><input type="checkbox" class="perm-cb" data-role="sales" data-perm="sales" checked></td></tr>
       </tbody>
     </table>
   </div>
@@ -119,7 +120,7 @@
     <div class="form-group"><label class="form-label">Rol *</label>
       <select class="form-input" id="u-role">
         <option value="admin">Yönetici</option>
-        <option value="atolye">Atölye</option>
+        <option value="atolye">Müdür</option>
         <option value="sales">Satış</option>
       </select>
     </div>
@@ -142,7 +143,7 @@ initPage('users', (user) => {
   const col = collection(db, 'users');
   let users = [];
 
-  const roleMap = {admin:{label:'Yönetici',color:'var(--or)'},atolye:{label:'Atölye',color:'#818CF8'},sales:{label:'Satış',color:'#4ADE80'}};
+  const roleMap = {admin:{label:'Yönetici',color:'var(--or)'},atolye:{label:'Müdür',color:'#818CF8'},sales:{label:'Satış',color:'#4ADE80'}};
 
   async function load() {
     try {
@@ -151,7 +152,7 @@ initPage('users', (user) => {
     } catch(e) {
       users = [
         {name:'Admin',email:'admin@caliskancanta.com',role:'admin',active:true},
-        {name:'Atölye',email:'atolye@caliskancanta.com',role:'atolye',active:true},
+        {name:'Müdür',email:'mudur@caliskancanta.com',role:'atolye',active:true},
         {name:'Mert Taşkın',email:'mert@caliskancanta.com',role:'sales',active:true},
       ];
     }
@@ -165,7 +166,7 @@ initPage('users', (user) => {
       return `<tr>
         <td><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:50%;background:var(--or-tint);color:var(--or);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${initials}</div><div><div style="font-weight:600">${u.name||'—'}</div><div style="font-size:12px;color:var(--text-3)">${u.email||'—'}</div></div></div></td>
         <td><span style="background:${r.color}22;color:${r.color};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">${r.label}</span></td>
-        <td style="font-size:12px;color:var(--text-3)">${u.role==='admin'?'Tüm yetkiler':u.role==='atolye'?'Üretim maliyeti girişi':'Teklif oluştur, satış yap'}</td>
+        <td style="font-size:12px;color:var(--text-3)">${u.role==='admin'?'Tüm yetkiler':u.role==='atolye'?'Üretim maliyeti, stok yönetimi':'Teklif oluştur, satış yap'}</td>
         <td><span style="color:#4ADE80;font-size:12px;font-weight:600">● Aktif</span></td>
         <td></td>
       </tr>`;
@@ -184,6 +185,34 @@ initPage('users', (user) => {
     modal.style.display='none'; render();
   };
   load();
+
+  // Yetki checkbox'ları - Firebase'e kaydet
+  document.querySelectorAll('.perm-cb:not([disabled])').forEach(cb => {
+    cb.addEventListener('change', async () => {
+      const perms = {};
+      document.querySelectorAll('.perm-cb').forEach(c => {
+        if (!perms[c.dataset.role]) perms[c.dataset.role] = {};
+        perms[c.dataset.role][c.dataset.perm] = c.checked;
+      });
+      try {
+        const { getFirestore, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        const { app } = await import('/_common.js');
+        const db = getFirestore(app);
+        await setDoc(doc(db, 'settings', 'permissions'), perms, {merge:true});
+        // Görsel geri bildirim
+        const btn = document.createElement('span');
+        btn.textContent = '✓ Kaydedildi';
+        btn.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#4ADE80;color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999';
+        document.body.appendChild(btn);
+        setTimeout(() => btn.remove(), 2000);
+      } catch(e) {}
+    });
+  });
+
+  // Checkbox stilini güzel yap
+  document.querySelectorAll('.perm-cb').forEach(cb => {
+    cb.style.cssText = 'width:18px;height:18px;cursor:pointer;accent-color:var(--or)';
+  });
 });
 </script>
 </body>
