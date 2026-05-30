@@ -124,6 +124,7 @@
         <option value="sales">Satış</option>
       </select>
     </div>
+    <div class="form-group"><label class="form-label">Şifre *</label><input class="form-input" id="u-password" type="password" placeholder="En az 6 karakter"></div>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button id="cancel-user" class="btn btn-secondary" style="flex:1">İptal</button>
       <button id="save-user" class="btn btn-primary" style="flex:1"><i class="ti ti-check"></i> Kaydet</button>
@@ -178,11 +179,40 @@ initPage('users', (user) => {
   document.getElementById('close-user').onclick = () => modal.style.display='none';
   document.getElementById('cancel-user').onclick = () => modal.style.display='none';
   document.getElementById('save-user').onclick = async () => {
-    const name=document.getElementById('u-name').value.trim(), email=document.getElementById('u-email').value.trim(), role=document.getElementById('u-role').value;
-    if (!name||!email) { alert('Ad ve e-posta zorunlu'); return; }
-    try { const ref=await addDoc(col,{name,email,role,active:true,createdBy:user.email}); users.push({id:ref.id,name,email,role,active:true}); }
-    catch(e) { users.push({id:Date.now()+'',name,email,role,active:true}); }
-    modal.style.display='none'; render();
+    const name = document.getElementById('u-name').value.trim();
+    const email = document.getElementById('u-email').value.trim();
+    const role = document.getElementById('u-role').value;
+    const password = document.getElementById('u-password').value;
+    if (!name || !email) { alert('Ad ve e-posta zorunlu'); return; }
+    if (!password || password.length < 6) { alert('Şifre en az 6 karakter olmalı'); return; }
+
+    const saveBtn = document.getElementById('save-user');
+    saveBtn.textContent = 'Kaydediliyor...';
+    saveBtn.disabled = true;
+
+    try {
+      // Firebase Auth'a kayıt et
+      const { getAuth, createUserWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+      const { app } = await import('/_common.js');
+      const auth2 = getAuth(app);
+      const cred = await createUserWithEmailAndPassword(auth2, email, password);
+      await updateProfile(cred.user, { displayName: name });
+
+      // Firestore'a rol bilgisi kaydet
+      await addDoc(col, {name, email, role, uid: cred.user.uid, active:true, createdBy:user.email});
+      users.push({id:cred.user.uid, name, email, role, active:true});
+      alert('Kullanıcı oluşturuldu ✓');
+    } catch(e) {
+      if (e.code === 'auth/email-already-in-use') {
+        alert('Bu e-posta zaten kayıtlı');
+      } else {
+        alert('Hata: ' + e.message);
+      }
+    }
+    saveBtn.textContent = 'Kaydet';
+    saveBtn.disabled = false;
+    modal.style.display='none';
+    render();
   };
   load();
 
