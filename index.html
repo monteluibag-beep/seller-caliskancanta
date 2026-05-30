@@ -30,30 +30,7 @@ body::after { content: ''; position: absolute; width: 400px; height: 400px; back
 .error-msg.show { display: flex; }
 </style>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js">
-  // Şifremi Unuttum
-  document.getElementById('forgot-btn').addEventListener('click', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    if (!email) {
-      showError('Lütfen önce e-posta adresinizi girin');
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, email);
-      showError('');
-      // Başarı mesajı
-      const msg = document.querySelector('.error-msg');
-      msg.style.display = 'flex';
-      msg.style.background = 'rgba(74,222,128,.15)';
-      msg.style.borderColor = 'rgba(74,222,128,.3)';
-      msg.style.color = '#4ADE80';
-      msg.innerHTML = '<i class="ti ti-check"></i> Şifre sıfırlama maili gönderildi!';
-    } catch(e) {
-      showError('Mail gönderilemedi. E-posta adresinizi kontrol edin.');
-    }
-  });
-</script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
 <body>
@@ -96,5 +73,45 @@ body::after { content: ''; position: absolute; width: 400px; height: 400px; back
 </div>
 
 <script src="/login.js"></script>
+
+<script type="module">
+import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyAJ-Fy5Qai4gAFBa55cGer8O3l8neMy2zI",
+  authDomain: "caliskancanta-seller.firebaseapp.com",
+  projectId: "caliskancanta-seller"
+});
+const auth = getAuth(app);
+
+document.getElementById('forgot-btn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const msg = document.querySelector('.error-msg');
+  if (!email) {
+    msg.style.display='flex';
+    msg.style.background='rgba(220,38,38,.15)';
+    msg.style.borderColor='rgba(220,38,38,.3)';
+    msg.style.color='#FCA5A5';
+    msg.innerHTML='<i class="ti ti-alert-circle"></i> Lütfen önce e-posta adresinizi girin';
+    return;
+  }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    msg.style.display='flex';
+    msg.style.background='rgba(74,222,128,.15)';
+    msg.style.borderColor='rgba(74,222,128,.3)';
+    msg.style.color='#4ADE80';
+    msg.innerHTML='<i class="ti ti-check"></i> Şifre sıfırlama maili gönderildi! Lütfen e-postanızı kontrol edin.';
+  } catch(e) {
+    msg.style.display='flex';
+    msg.style.background='rgba(220,38,38,.15)';
+    msg.style.borderColor='rgba(220,38,38,.3)';
+    msg.style.color='#FCA5A5';
+    msg.innerHTML='<i class="ti ti-alert-circle"></i> Mail gönderilemedi. E-posta adresinizi kontrol edin.';
+  }
+});
+</script>
 </body>
 </html>
