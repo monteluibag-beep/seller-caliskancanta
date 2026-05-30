@@ -124,6 +124,10 @@
         <option value="sales">Satış</option>
       </select>
     </div>
+    <div id="u-new-password">
+      <div class="form-group"><label class="form-label">Şifre</label><input class="form-input" id="u-password" type="password" placeholder="En az 6 karakter"></div>
+    </div>
+    <div id="perm-section" style="display:none"></div>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button id="cancel-user" class="btn btn-secondary" style="flex:1">İptal</button>
       <button id="save-user" class="btn btn-primary" style="flex:1"><i class="ti ti-check"></i> Kaydet</button>
@@ -138,56 +142,30 @@ import { initPage } from '/_common.js';
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { app } from '/_common.js';
 
-initPage('users', (user) => {
+initPage('users', (currentUser) => {
   const db = getFirestore(app);
   const col = collection(db, 'users');
   const permDoc = doc(db, 'settings', 'permissions');
   let users = [];
+  let editingId = null;
 
-  const roleMap = {admin:{label:'Yönetici',color:'var(--or)'},atolye:{label:'Müdür',color:'#818CF8'},sales:{label:'Satış',color:'#4ADE80'}};
-
-  // Varsayılan yetkiler
-  const defaultPerms = {
-    admin: {cost:true,offer:true,stock:true,users:true,cats:true,settings:true,sales:true},
-    atolye: {cost:true,offer:false,stock:true,users:false,cats:false,settings:false,sales:false},
-    sales: {cost:false,offer:true,stock:false,users:false,cats:false,settings:false,sales:true}
+  const roleMap = {
+    admin: {label:'Yönetici', color:'var(--or)'},
+    atolye: {label:'Müdür', color:'#818CF8'},
+    sales: {label:'Satış', color:'#4ADE80'}
   };
 
-  // Yetki matrisi yükle
-  async function loadPerms() {
-    try {
-      const snap = await getDoc(permDoc);
-      const perms = snap.exists() ? snap.data() : defaultPerms;
-      document.querySelectorAll('.perm-cb').forEach(cb => {
-        const role = cb.dataset.role;
-        const perm = cb.dataset.perm;
-        if (perms[role] && perms[role][perm] !== undefined) {
-          cb.checked = perms[role][perm];
-        }
-      });
-    } catch(e) {
-      // Varsayılan değerler zaten HTML'de
-    }
-  }
+  const defaultPerms = {
+    admin:  {cost:true, offer:true, stock:true, users:true, cats:true, settings:true, sales:true},
+    atolye: {cost:true, offer:false, stock:true, users:false, cats:false, settings:false, sales:false},
+    sales:  {cost:false, offer:true, stock:false, users:false, cats:false, settings:false, sales:true}
+  };
 
-  // Yetki kaydet
-  async function savePerms() {
-    const perms = {admin:{},atolye:{},sales:{}};
-    document.querySelectorAll('.perm-cb').forEach(cb => {
-      perms[cb.dataset.role][cb.dataset.perm] = cb.checked;
-    });
-    try {
-      await setDoc(permDoc, perms);
-      showToast('Yetkiler kaydedildi ✓');
-    } catch(e) {
-      showToast('Kaydedildi (demo mod)');
-    }
-  }
-
-  function showToast(msg) {
+  // Toast
+  function toast(msg, color='#4ADE80') {
     const t = document.createElement('div');
     t.textContent = msg;
-    t.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#4ADE80;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2)';
+    t.style.cssText = `position:fixed;bottom:20px;right:20px;background:${color};color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2)`;
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 2500);
   }
@@ -196,13 +174,13 @@ initPage('users', (user) => {
   async function load() {
     try {
       const snap = await getDocs(col);
-      users = snap.docs.map(d=>({id:d.id,...d.data()}));
+      users = snap.docs.map(d => ({id:d.id, ...d.data()}));
       if (!users.length) throw new Error('empty');
     } catch(e) {
       users = [
-        {id:'1',name:'Admin',email:'admin@caliskancanta.com',role:'admin',active:true},
-        {id:'2',name:'Müdür',email:'mudur@caliskancanta.com',role:'atolye',active:true},
-        {id:'3',name:'Mert Taşkın',email:'mert@caliskancanta.com',role:'sales',active:true},
+        {id:'1', name:'Admin', email:'admin@caliskancanta.com', role:'admin', active:true},
+        {id:'2', name:'Müdür', email:'mudur@caliskancanta.com', role:'atolye', active:true},
+        {id:'3', name:'Mert Taşkın', email:'mert@caliskancanta.com', role:'sales', active:true},
       ];
     }
     render();
@@ -210,8 +188,8 @@ initPage('users', (user) => {
   }
 
   function render() {
-    document.getElementById('users-tbody').innerHTML = users.map(u=>{
-      const r = roleMap[u.role]||roleMap.sales;
+    document.getElementById('users-tbody').innerHTML = users.map(u => {
+      const r = roleMap[u.role] || roleMap.sales;
       const initials = (u.name||u.email||'?').substring(0,2).toUpperCase();
       return `<tr>
         <td><div style="display:flex;align-items:center;gap:10px">
@@ -219,110 +197,136 @@ initPage('users', (user) => {
           <div><div style="font-weight:600">${u.name||'—'}</div><div style="font-size:12px;color:var(--text-3)">${u.email||'—'}</div></div>
         </div></td>
         <td><span style="background:${r.color}22;color:${r.color};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">${r.label}</span></td>
-        <td style="font-size:12px;color:var(--text-3)">${u.role==='admin'?'Tüm yetkiler':u.role==='atolye'?'Üretim maliyeti, stok yönetimi':'Teklif oluştur, satış yap'}</td>
+        <td style="font-size:12px;color:var(--text-3)">${u.role==='admin'?'Tüm yetkiler':u.role==='atolye'?'Üretim maliyeti, stok':'Teklif, satış'}</td>
         <td><span style="color:#4ADE80;font-size:12px;font-weight:600">● Aktif</span></td>
-        <td>
-          <div style="display:flex;gap:6px">
-            <button onclick="editUser('${u.id}')" class="btn btn-secondary btn-sm" title="Düzenle"><i class="ti ti-edit"></i></button>
-            <button onclick="deleteUser('${u.id}','${u.name}')" class="btn btn-sm" style="background:rgba(248,113,113,.15);color:#F87171;border:none;border-radius:6px;padding:4px 8px;cursor:pointer" title="Sil"><i class="ti ti-trash"></i></button>
-          </div>
-        </td>
+        <td><div style="display:flex;gap:6px">
+          <button onclick="openEdit('${u.id}')" class="btn btn-secondary btn-sm"><i class="ti ti-edit"></i></button>
+          <button onclick="delUser('${u.id}','${(u.name||'').replace(/'/g,"\'")}'')" style="background:rgba(248,113,113,.15);color:#F87171;border:none;border-radius:6px;padding:4px 10px;cursor:pointer"><i class="ti ti-trash"></i></button>
+        </div></td>
       </tr>`;
     }).join('');
   }
 
-  // Düzenle
-  window.editUser = (id) => {
-    const u = users.find(x=>x.id===id);
+  // Yetki matrisi yükle
+  async function loadPerms() {
+    try {
+      const snap = await getDoc(permDoc);
+      const perms = snap.exists() ? snap.data() : defaultPerms;
+      document.querySelectorAll('.perm-cb').forEach(cb => {
+        const p = perms[cb.dataset.role];
+        if (p && p[cb.dataset.perm] !== undefined) cb.checked = p[cb.dataset.perm];
+      });
+    } catch(e) {}
+  }
+
+  async function savePerms() {
+    const perms = {admin:{}, atolye:{}, sales:{}};
+    document.querySelectorAll('.perm-cb').forEach(cb => {
+      perms[cb.dataset.role][cb.dataset.perm] = cb.checked;
+    });
+    try {
+      await setDoc(permDoc, perms);
+      toast('Yetkiler kaydedildi ✓');
+    } catch(e) { toast('Kaydedildi'); }
+  }
+
+  // Checkbox stilini ayarla
+  document.querySelectorAll('.perm-cb').forEach(cb => {
+    cb.style.cssText = 'width:18px;height:18px;cursor:pointer;accent-color:var(--or)';
+    if (!cb.disabled) cb.addEventListener('change', savePerms);
+  });
+
+  // Modal aç - Yeni kullanıcı
+  const modal = document.getElementById('modal-user');
+  document.getElementById('btn-new-user').onclick = () => {
+    editingId = null;
+    document.getElementById('user-modal-title').textContent = 'Yeni Kullanıcı Ekle';
+    document.getElementById('u-name').value = '';
+    document.getElementById('u-email').value = '';
+    document.getElementById('u-email').readOnly = false;
+    document.getElementById('u-role').value = 'sales';
+    document.getElementById('u-password').value = '';
+    document.getElementById('u-password').placeholder = 'En az 6 karakter';
+    document.getElementById('u-new-password').style.display = 'block';
+    document.getElementById('perm-section').style.display = 'none';
+    modal.style.display = 'flex';
+  };
+
+  // Modal aç - Düzenle
+  window.openEdit = (id) => {
+    const u = users.find(x => x.id === id);
     if (!u) return;
-    document.getElementById('u-name').value = u.name||'';
-    document.getElementById('u-email').value = u.email||'';
-    document.getElementById('u-role').value = u.role||'sales';
+    editingId = id;
+    document.getElementById('user-modal-title').textContent = 'Kullanıcıyı Düzenle';
+    document.getElementById('u-name').value = u.name || '';
+    document.getElementById('u-email').value = u.email || '';
+    document.getElementById('u-email').readOnly = true;
+    document.getElementById('u-role').value = u.role || 'sales';
     document.getElementById('u-password').value = '';
     document.getElementById('u-password').placeholder = 'Boş bırakın (değiştirmek için doldurun)';
-    document.getElementById('user-modal-title').textContent = 'Kullanıcıyı Düzenle';
-    document.getElementById('save-user').dataset.editId = id;
-    document.getElementById('modal-user').style.display='flex';
+    document.getElementById('u-new-password').style.display = 'block';
+    document.getElementById('perm-section').style.display = 'none';
+    modal.style.display = 'flex';
   };
 
   // Sil
-  window.deleteUser = async (id, name) => {
+  window.delUser = async (id, name) => {
     if (!confirm(`"${name}" silinsin mi?`)) return;
     try {
-      await deleteDoc(doc(db,'users',id));
-      users = users.filter(u=>u.id!==id);
-      render();
-      showToast('Kullanıcı silindi');
+      await deleteDoc(doc(db, 'users', id));
+      users = users.filter(u => u.id !== id);
+      toast('Kullanıcı silindi');
     } catch(e) {
-      users = users.filter(u=>u.id!==id);
-      render();
-      showToast('Silindi (demo mod)');
+      users = users.filter(u => u.id !== id);
+      toast('Silindi (demo)');
     }
+    render();
   };
 
-  const modal = document.getElementById('modal-user');
-  document.getElementById('btn-new-user').onclick = () => {
-    document.getElementById('u-name').value='';
-    document.getElementById('u-email').value='';
-    document.getElementById('u-password').value='';
-    document.getElementById('u-password').placeholder='En az 6 karakter';
-    document.getElementById('user-modal-title').textContent='Kullanıcı Ekle';
-    delete document.getElementById('save-user').dataset.editId;
-    modal.style.display='flex';
-  };
-  document.getElementById('close-user').onclick = () => modal.style.display='none';
-  document.getElementById('cancel-user').onclick = () => modal.style.display='none';
+  document.getElementById('close-user').onclick = () => modal.style.display = 'none';
+  document.getElementById('cancel-user').onclick = () => modal.style.display = 'none';
 
+  // Kaydet
   document.getElementById('save-user').onclick = async () => {
     const name = document.getElementById('u-name').value.trim();
     const email = document.getElementById('u-email').value.trim();
     const role = document.getElementById('u-role').value;
     const password = document.getElementById('u-password').value;
-    const editId = document.getElementById('save-user').dataset.editId;
 
-    if (!name||!email) { alert('Ad ve e-posta zorunlu'); return; }
+    if (!name || !email) { toast('Ad ve e-posta zorunlu', '#F87171'); return; }
 
-    const saveBtn = document.getElementById('save-user');
-    saveBtn.textContent = 'Kaydediliyor...';
-    saveBtn.disabled = true;
+    const btn = document.getElementById('save-user');
+    btn.textContent = 'Kaydediliyor...';
+    btn.disabled = true;
 
     try {
-      if (editId) {
+      if (editingId) {
         // Düzenle
-        await setDoc(doc(db,'users',editId), {name,email,role,active:true,updatedBy:user.email}, {merge:true});
-        const idx = users.findIndex(u=>u.id===editId);
-        if (idx>=0) users[idx] = {...users[idx],name,email,role};
-        showToast('Kullanıcı güncellendi ✓');
+        await setDoc(doc(db, 'users', editingId), {name, role, active:true, updatedBy:currentUser.email}, {merge:true});
+        const idx = users.findIndex(u => u.id === editingId);
+        if (idx >= 0) users[idx] = {...users[idx], name, role};
+        toast('Kullanıcı güncellendi ✓');
       } else {
-        // Yeni kullanıcı - Firebase Auth'a kayıt
-        if (!password||password.length<6) { alert('Şifre en az 6 karakter'); saveBtn.textContent='Kaydet'; saveBtn.disabled=false; return; }
+        // Yeni kullanıcı
+        if (!password || password.length < 6) { toast('Şifre en az 6 karakter', '#F87171'); btn.textContent='Kaydet'; btn.disabled=false; return; }
         const { getAuth, createUserWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
         const auth2 = getAuth(app);
         const cred = await createUserWithEmailAndPassword(auth2, email, password);
-        await updateProfile(cred.user, {displayName:name});
-        const ref = await addDoc(col, {name,email,role,uid:cred.user.uid,active:true,createdBy:user.email});
-        users.push({id:ref.id,name,email,role,active:true});
-        showToast('Kullanıcı oluşturuldu ✓');
+        await updateProfile(cred.user, {displayName: name});
+        const ref = await addDoc(col, {name, email, role, uid: cred.user.uid, active:true, createdBy:currentUser.email});
+        users.push({id:ref.id, name, email, role, active:true});
+        toast('Kullanıcı oluşturuldu ✓');
       }
     } catch(e) {
-      if (e.code==='auth/email-already-in-use') alert('Bu e-posta zaten kayıtlı');
-      else { showToast('Kaydedildi (demo mod)'); }
+      if (e.code === 'auth/email-already-in-use') toast('Bu e-posta zaten kayıtlı', '#F87171');
+      else toast('Hata: ' + (e.message||'Bilinmeyen'), '#F87171');
     }
 
-    saveBtn.textContent = 'Kaydet';
-    saveBtn.disabled = false;
-    modal.style.display='none';
+    btn.textContent = 'Kaydet';
+    btn.disabled = false;
+    modal.style.display = 'none';
     render();
   };
-
-  // Yetki checkbox'ları
-  document.querySelectorAll('.perm-cb:not([disabled])').forEach(cb => {
-    cb.style.cssText = 'width:18px;height:18px;cursor:pointer;accent-color:var(--or)';
-    cb.addEventListener('change', savePerms);
-  });
-  document.querySelectorAll('.perm-cb[disabled]').forEach(cb => {
-    cb.style.cssText = 'width:18px;height:18px;accent-color:var(--or);opacity:.6';
-  });
 
   load();
 });
