@@ -177,17 +177,17 @@ initPage('users', (currentUser) => {
       users = snap.docs.map(d => ({id:d.id, ...d.data()}));
       if (!users.length) throw new Error('empty');
     } catch(e) {
-      users = [
-        {id:'1', name:'Admin', email:'admin@caliskancanta.com', role:'admin', active:true},
-        {id:'2', name:'Müdür', email:'mudur@caliskancanta.com', role:'atolye', active:true},
-        {id:'3', name:'Mert Taşkın', email:'mert@caliskancanta.com', role:'sales', active:true},
-      ];
+      users = [];
     }
     render();
     loadPerms();
   }
 
   function render() {
+    if (!users.length) {
+      document.getElementById('users-tbody').innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-3)">Henüz kullanıcı yok</td></tr>';
+      return;
+    }
     document.getElementById('users-tbody').innerHTML = users.map(u => {
       const r = roleMap[u.role] || roleMap.sales;
       const initials = (u.name||u.email||'?').substring(0,2).toUpperCase();
