@@ -55,16 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-window.openDrawer = function() {
-  document.getElementById('drawer')?.classList.add('open');
-  document.getElementById('drawer-overlay')?.classList.add('open');
-  document.body.style.overflow = 'hidden';
-};
-window.closeDrawer = function() {
-  document.getElementById('drawer')?.classList.remove('open');
-  document.getElementById('drawer-overlay')?.classList.remove('open');
-  document.body.style.overflow = '';
-};
+// drawer fonksiyonları initSidebar içinde tanımlı
 
 function initSidebar() {
   const sidebar = document.querySelector('aside.sidebar');
