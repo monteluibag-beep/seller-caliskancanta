@@ -366,7 +366,7 @@ initPage('offers', (user) => {
       existing.total = existing.price * existing.qty * (1 - existing.disc/100);
     } else {
       const disc = getDiscount(1);
-      offerItems.push({id:pid, name:p.name, code:p.code, photo:p.photo||null, price:p.list||0, qty:1, disc, total:(p.list||0)*(1-disc/100)});
+      offerItems.push({id:pid, name:p.name, code:p.code, photo:p.photo||null, price:p.list||0, cost:p.cost||0, qty:1, disc, total:(p.list||0)*(1-disc/100)});
     }
     // Arama sonuçlarını güncelle
     const q = document.getElementById('o-search').value.trim().toLowerCase();
