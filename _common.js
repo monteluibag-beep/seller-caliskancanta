@@ -45,6 +45,16 @@ export function initPage(pageName, callback) {
 window.doLogout = function() {
   signOut(auth).then(() => { window.location.href = '/index.html'; });
 };
+
+// Çıkış butonlarını dinle
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.btn-logout-trigger, .sidebar-logout-btn, [data-action="doLogout"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      signOut(auth).then(() => { window.location.href = '/index.html'; });
+    });
+  });
+});
 window.openDrawer = function() {
   document.getElementById('drawer')?.classList.add('open');
   document.getElementById('drawer-overlay')?.classList.add('open');
