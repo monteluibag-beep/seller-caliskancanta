@@ -55,7 +55,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-// drawer fonksiyonları initSidebar içinde tanımlı
+window.openDrawer = function() {
+  document.getElementById('drawer')?.classList.add('open');
+  document.getElementById('drawer-overlay')?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+window.closeDrawer = function() {
+  document.getElementById('drawer')?.classList.remove('open');
+  document.getElementById('drawer-overlay')?.classList.remove('open');
+  document.body.style.overflow = '';
+};
 
 function initSidebar() {
   const sidebar = document.querySelector('aside.sidebar');
