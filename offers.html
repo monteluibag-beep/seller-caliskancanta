@@ -169,7 +169,12 @@
   <div class="card">
     <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
       <div style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.5px">Teklif Kalemleri</div>
-      <span id="offer-item-count" style="font-size:12px;color:var(--text-3)">0 ürün</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="offer-item-count" style="font-size:12px;color:var(--text-3)">0 ürün</span>
+        <button id="disc-toggle" onclick="toggleDiscount()" style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1.5px solid var(--or);background:var(--or);color:#fff;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s">
+          <i class="ti ti-percentage"></i> İskonto Açık
+        </button>
+      </div>
     </div>
     <div id="offer-items-list"></div>
     <!-- Toplam -->
@@ -356,6 +361,32 @@ initPage('offers', (user) => {
   });
 
   // Teklif listesine ekle
+  // İskonto toggle
+  let discountEnabled = true;
+
+  window.toggleDiscount = () => {
+    discountEnabled = !discountEnabled;
+    const btn = document.getElementById('disc-toggle');
+    if (discountEnabled) {
+      btn.style.background = 'var(--or)';
+      btn.style.borderColor = 'var(--or)';
+      btn.style.color = '#fff';
+      btn.innerHTML = '<i class="ti ti-percentage"></i> İskonto Açık';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.borderColor = 'var(--border)';
+      btn.style.color = 'var(--text-3)';
+      btn.innerHTML = '<i class="ti ti-percentage-off"></i> İskonto Kapalı';
+    }
+    // Mevcut kalemleri güncelle
+    offerItems.forEach(it => {
+      it.disc = discountEnabled ? getDiscount(it.qty) : 0;
+      it.total = it.price * it.qty * (1 - it.disc/100);
+    });
+    renderItems();
+    updateTotals();
+  };
+
   window.addToOffer = (pid) => {
     const p = allProducts.find(x => x.id === pid);
     if (!p) return;
@@ -365,7 +396,7 @@ initPage('offers', (user) => {
       existing.disc = getDiscount(existing.qty);
       existing.total = existing.price * existing.qty * (1 - existing.disc/100);
     } else {
-      const disc = getDiscount(1);
+      const disc = discountEnabled ? getDiscount(1) : 0;
       offerItems.push({id:pid, name:p.name, code:p.code, photo:p.photo||null, price:p.list||0, cost:p.cost||0, qty:1, disc, total:(p.list||0)*(1-disc/100)});
     }
     // Arama sonuçlarını güncelle
@@ -441,7 +472,7 @@ initPage('offers', (user) => {
 
   window.chQty = (i, d) => {
     offerItems[i].qty = Math.max(1, offerItems[i].qty + d);
-    offerItems[i].disc = getDiscount(offerItems[i].qty);
+    offerItems[i].disc = discountEnabled ? getDiscount(offerItems[i].qty) : 0;
     offerItems[i].total = offerItems[i].price * offerItems[i].qty * (1 - offerItems[i].disc/100);
     renderItems(); updateTotals();
   };
