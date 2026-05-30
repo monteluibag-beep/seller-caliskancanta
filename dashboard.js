@@ -88,3 +88,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Sidebar collapse - _common.js'teki ile aynı
+(function initSidebarCollapse() {
+  const sidebar = document.querySelector('aside.sidebar');
+  if (!sidebar) return;
+  const brand = sidebar.querySelector('.sidebar-brand');
+  if (brand && !brand.querySelector('.sidebar-toggle')) {
+    const existingHTML = brand.innerHTML;
+    brand.innerHTML = '<div class="brand-info">' + existingHTML + '</div><button class="sidebar-toggle" id="sidebar-toggle"><svg width="18" height="14" viewBox="0 0 18 14" fill="none"><rect x="0" y="0" width="18" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="12" width="10" height="2" rx="1" fill="currentColor"/></svg></button>';
+  }
+  const btn = document.getElementById('sidebar-toggle');
+  if (!btn) return;
+  if (localStorage.getItem('sb-collapsed') === '1') sidebar.classList.add('collapsed');
+  btn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    localStorage.setItem('sb-collapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+  });
+})();
