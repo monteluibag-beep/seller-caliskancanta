@@ -143,9 +143,9 @@
   </div>
 </div>
 <script type="module">
-import { initPage } from '/_common.js';
+import { initPage, app, getRates, fmt } from '/_common.js';
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { app } from '/_common.js';
+
 
 initPage('stock', (user) => {
   const db = getFirestore(app);
