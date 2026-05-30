@@ -30,7 +30,30 @@ body::after { content: ''; position: absolute; width: 400px; height: 400px; back
 .error-msg.show { display: flex; }
 </style>
 
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js">
+  // Şifremi Unuttum
+  document.getElementById('forgot-btn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    if (!email) {
+      showError('Lütfen önce e-posta adresinizi girin');
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      showError('');
+      // Başarı mesajı
+      const msg = document.querySelector('.error-msg');
+      msg.style.display = 'flex';
+      msg.style.background = 'rgba(74,222,128,.15)';
+      msg.style.borderColor = 'rgba(74,222,128,.3)';
+      msg.style.color = '#4ADE80';
+      msg.innerHTML = '<i class="ti ti-check"></i> Şifre sıfırlama maili gönderildi!';
+    } catch(e) {
+      showError('Mail gönderilemedi. E-posta adresinizi kontrol edin.');
+    }
+  });
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
 <body>
@@ -61,6 +84,9 @@ body::after { content: ''; position: absolute; width: 400px; height: 400px; back
     <button class="login-btn" id="login-btn">
       <i class="ti ti-login"></i> Giriş Yap
     </button>
+    <div style="text-align:center;margin-top:14px">
+      <a href="#" id="forgot-btn" style="font-size:12px;color:rgba(255,255,255,.45);text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--or)'" onmouseout="this.style.color='rgba(255,255,255,.45)'">Şifremi Unuttum</a>
+    </div>
 
     <div class="login-footer">
       <i class="ti ti-shield-lock"></i>
