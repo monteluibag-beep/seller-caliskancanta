@@ -223,9 +223,9 @@
   </div>
 </div>
 <script type="module">
-import { initPage, app, getRates, fmt } from '/_common.js';
+import { initPage } from '/_common.js';
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+import { app, getRates } from '/_common.js';
 
 initPage('offers', (user) => {
   const db = getFirestore(app);
@@ -709,37 +709,6 @@ initPage('offers', (user) => {
 
   Promise.all([loadOffers(), loadProducts()]);
 });
-
-window.previewOffer = async function(id) {
-  const { getFirestore, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const db = getFirestore(app);
-  const snap = await getDoc(doc(db, 'offers', id));
-  if (!snap.exists()) { alert('Teklif bulunamadı'); return; }
-  const o = snap.data();
-  alert('Teklif No: ' + (o.no||id) + '\nMüşteri: ' + (o.customer||'—') + '\nToplam: ₺' + (o.total||0).toLocaleString('tr-TR') + '\nDurum: ' + (o.status||'pending'));
-};
-
-window.approveOffer = async function(id) {
-  if (!confirm('Bu teklifi onaylamak istiyor musunuz?')) return;
-  const { getFirestore, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const db = getFirestore(app);
-  await updateDoc(doc(db, 'offers', id), { status: 'approved' });
-  alert('Teklif onaylandı ✓');
-  location.reload();
-  location.reload();
-andı ✓');
-, id), { s{
-, id), { s{
-
-load();
-andı ✓');
-tmtmtmtmtmtmtmtmtmtz?')) return;
-  const { getFirestore, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-  const db = getFirestore(app);
-  await updateDoc(doc(db, 'offers', id), { status: 'rejected' });
-  alert('Teklif iptal edildi');
-  location.reload();
-};
 </script>
 
 <!-- BARKOD KAMERA MODAL -->
