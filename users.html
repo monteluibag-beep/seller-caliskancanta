@@ -201,7 +201,7 @@ initPage('users', (currentUser) => {
         <td><span style="color:#4ADE80;font-size:12px;font-weight:600">● Aktif</span></td>
         <td><div style="display:flex;gap:6px">
           <button onclick="openEdit('${u.id}')" class="btn btn-secondary btn-sm"><i class="ti ti-edit"></i></button>
-          <button onclick="delUser('${u.id}','${(u.name||'').replace(/'/g,"\'")}'')" style="background:rgba(248,113,113,.15);color:#F87171;border:none;border-radius:6px;padding:4px 10px;cursor:pointer"><i class="ti ti-trash"></i></button>
+          <button onclick="delUser('${u.id}',encodeURIComponent(u.name||''))" style="background:rgba(248,113,113,.15);color:#F87171;border:none;border-radius:6px;padding:4px 10px;cursor:pointer"><i class="ti ti-trash"></i></button>
         </div></td>
       </tr>`;
     }).join('');
@@ -270,7 +270,8 @@ initPage('users', (currentUser) => {
   };
 
   // Sil
-  window.delUser = async (id, name) => {
+  window.delUser = async (id, encodedName) => {
+    const name = decodeURIComponent(encodedName);
     if (!confirm(`"${name}" silinsin mi?`)) return;
     try {
       await deleteDoc(doc(db, 'users', id));
