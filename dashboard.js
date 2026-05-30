@@ -106,3 +106,33 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('sb-collapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
   });
 })();
+
+// Sidebar init
+import('/_common.js').then(m => {}).catch(()=>{});
+window.addEventListener('load', function() {
+  var b = document.querySelector('aside.sidebar .sidebar-brand');
+  if (b && !b.querySelector('img.cc-logo')) {
+    fetch('/_common.js').then(r=>r.text()).then(t=>{
+      var m = t.match(/const LOGO_B64 = "([^"]+)"/);
+      if (!m) return;
+      b.innerHTML = '';
+      var img = document.createElement('img');
+      img.src = 'data:image/png;base64,' + m[1];
+      img.className = 'cc-logo';
+      img.style.cssText = 'height:32px;max-width:160px;object-fit:contain;display:block;flex:1;min-width:0';
+      b.appendChild(img);
+      var btn = document.createElement('button');
+      btn.id = 'sidebar-toggle';
+      btn.className = 'sidebar-toggle';
+      btn.title = 'Daralt';
+      btn.innerHTML = '<svg width="18" height="14" viewBox="0 0 18 14" fill="none"><rect x="0" y="0" width="18" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="12" width="10" height="2" rx="1" fill="currentColor"/></svg>';
+      b.appendChild(btn);
+      var s = document.querySelector('aside.sidebar');
+      if (localStorage.getItem('sb-collapsed')==='1') s.classList.add('collapsed');
+      btn.addEventListener('click', function() {
+        s.classList.toggle('collapsed');
+        localStorage.setItem('sb-collapsed', s.classList. ontains('collapsed')?'1':'0');
+      });
+    });
+  }
+});
