@@ -975,3 +975,189 @@ select.form-input { cursor: pointer; }
 /* Collapsed — çizgiler eşitleniyor (kapalı menü = eşit çizgiler) */
 .sidebar.collapsed .hamburger-icon .line-2 { width: 18px; }
 .sidebar.collapsed .hamburger-icon .line-3 { width: 18px; }
+
+/* ══════════════════════════════════════════════════════
+   MOBILE-FIRST RESPONSIVE — Full Optimization
+══════════════════════════════════════════════════════ */
+
+/* ── Base mobile improvements ── */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: hidden; }
+
+img, video, iframe { max-width: 100%; height: auto; }
+
+/* Touch-friendly tap targets */
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+button, .btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ── Mobile: 320px–768px ── */
+@media (max-width: 768px) {
+
+  /* Layout */
+  .app-layout { flex-direction: column; height: auto; overflow-x: hidden; }
+  .sidebar { display: none !important; }
+  .main { width: 100%; min-width: 0; overflow-x: hidden; }
+  .mob-topbar { display: flex !important; }
+  .bottom-nav { display: flex !important; }
+  .topbar { display: none; }
+  .page-content { padding: 14px 12px 90px; overflow-x: hidden; }
+
+  /* Typography */
+  .page-title { font-size: 16px; }
+  .card-title { font-size: 14px; }
+
+  /* Grids */
+  .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr !important; gap: 12px !important; }
+
+  /* Cards */
+  .card { padding: 14px 12px; border-radius: 10px; }
+  .card-header { flex-wrap: wrap; gap: 8px; }
+  .stat-card { padding: 14px 12px; }
+  .stat-value { font-size: 22px; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 8px; }
+  table { min-width: 480px; font-size: 12px; }
+  th, td { padding: 10px 8px; white-space: nowrap; }
+
+  /* Forms */
+  .form-group { margin-bottom: 14px; }
+  .form-input, input.form-input, select.form-input, textarea.form-input {
+    font-size: 16px !important; /* iOS zoom önleme */
+    min-height: 44px;
+    padding: 10px 12px;
+    width: 100%;
+  }
+  .form-label { font-size: 12px; margin-bottom: 5px; }
+
+  /* Buttons */
+  .btn { padding: 10px 14px; font-size: 13px; min-height: 44px; border-radius: 9px; }
+  .btn-sm { padding: 7px 10px; font-size: 12px; min-height: 36px; }
+  .topbar-right { gap: 6px; flex-wrap: wrap; }
+
+  /* Modals */
+  div[id*="modal"] > div,
+  div[style*="max-width:560px"],
+  div[style*="max-width:480px"],
+  div[style*="max-width:440px"],
+  div[style*="max-width:420px"] {
+    max-width: 95vw !important;
+    width: 95vw !important;
+    margin: 10px auto !important;
+    padding: 18px 16px !important;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Form grids in modals */
+  div[style*="grid-template-columns:1fr 1fr"],
+  div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Products grid */
+  #o-prod-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+
+  /* Offers */
+  div[style*="grid-template-columns:340px"] {
+    grid-template-columns: 1fr !important;
+  }
+  .offer-header, .offer-row {
+    grid-template-columns: 1fr 60px 80px 32px !important;
+    font-size: 11px;
+  }
+
+  /* Pagination & filters */
+  .filter-bar { flex-wrap: wrap; gap: 8px; }
+  .filter-bar input, .filter-bar select { flex: 1; min-width: 140px; }
+
+  /* Badges */
+  .badge { font-size: 10px; padding: 2px 8px; }
+
+  /* Hide non-essential columns */
+  .hide-mob { display: none !important; }
+
+  /* Mob topbar improvements */
+  .mob-topbar { padding: 10px 14px; min-height: 54px; }
+
+  /* Bottom nav */
+  .bottom-nav { height: 60px; padding-bottom: env(safe-area-inset-bottom); }
+  .bnav { font-size: 9px; gap: 3px; }
+  .bnav i { font-size: 18px; }
+
+  /* Drawer */
+  .drawer { width: 85vw; max-width: 320px; }
+
+  /* Search inputs */
+  input[type="search"], input[placeholder*="Ara"], input[placeholder*="ara"] {
+    font-size: 16px !important;
+  }
+
+  /* Stats grid 2 col on small */
+  .stat-card .stat-value { font-size: 20px; }
+  .stat-card .stat-label { font-size: 11px; }
+  .stat-card .stat-sub { font-size: 10px; }
+}
+
+/* ── Extra small: 320px–420px ── */
+@media (max-width: 420px) {
+  .page-content { padding: 10px 10px 90px; }
+  .stats-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .card { padding: 12px 10px; }
+  .stat-value { font-size: 18px; }
+  table { min-width: 400px; font-size: 11px; }
+  th, td { padding: 8px 6px; }
+  #o-prod-grid { grid-template-columns: 1fr 1fr !important; }
+  .btn { padding: 9px 12px; font-size: 12px; }
+  .mob-topbar span { font-size: 13px; }
+}
+
+/* ── Tablet: 768px–1024px ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sidebar { width: 200px; }
+  :root { --sidebar-w: 200px; }
+  .page-content { padding: 18px 16px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+  .card { padding: 16px; }
+  table { font-size: 13px; }
+  .form-input { font-size: 15px; }
+  #o-prod-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+/* ── Desktop: 1024px+ ── */
+@media (min-width: 1025px) {
+  .mob-topbar { display: none !important; }
+  .bottom-nav { display: none !important; }
+  .sidebar { display: flex !important; }
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ── Safe area (iPhone notch) ── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .bottom-nav {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    height: calc(60px + env(safe-area-inset-bottom));
+  }
+  .page-content { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+}
+
+/* ── Horizontal scroll prevention ── */
+.main, .page-content, .card, .table-wrap {
+  max-width: 100%;
+}
+
+/* ── Touch scrolling ── */
+.table-wrap, .drawer, div[style*="overflow"] {
+  -webkit-overflow-scrolling: touch;
+}
+
