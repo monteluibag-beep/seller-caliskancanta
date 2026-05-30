@@ -110,12 +110,52 @@ function initSidebar() {
 
   // Toggle event
   const btn = document.getElementById('sidebar-toggle');
-  if (!btn) return;
-  if (localStorage.getItem('sb-collapsed') === '1') sidebar.classList.add('collapsed');
-  btn.addEventListener('click', () => {
-    sidebar.classList.toggle('collapsed');
-    localStorage.setItem('sb-collapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+  if (btn) {
+    if (localStorage.getItem('sb-collapsed') === '1') sidebar.classList.add('collapsed');
+    btn.addEventListener('click', () => {
+      sidebar.classList.toggle('collapsed');
+      localStorage.setItem('sb-collapsed', sidebar.classList.contains('collapsed') ? '1' : '0');
+    });
+  }
+
+  // Drawer event listeners - tüm sayfalarda çalışsın
+  function openDrawer() {
+    document.getElementById('drawer')?.classList.add('open');
+    document.getElementById('drawer-overlay')?.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    document.getElementById('drawer')?.classList.remove('open');
+    document.getElementById('drawer-overlay')?.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Hamburger - mob topbar
+  document.querySelectorAll('[data-action="openDrawer"], .hamburger, #btn-open-drawer-mob').forEach(el => {
+    el.addEventListener('click', openDrawer);
   });
+
+  // Bottom nav "Daha" butonu
+  const drawerBottom = document.getElementById('btn-open-drawer-bottom');
+  if (drawerBottom) drawerBottom.addEventListener('click', openDrawer);
+
+  // Drawer kapat
+  document.querySelectorAll('[data-action="closeDrawer"], .drawer-close, #drawer-overlay').forEach(el => {
+    el.addEventListener('click', closeDrawer);
+  });
+
+  // Drawer nav item tıklanınca kapat
+  document.querySelectorAll('.drawer .nav-item').forEach(el => {
+    el.addEventListener('click', closeDrawer);
+  });
+
+  // Aktif bnav
+  const currentPage = document.querySelector('aside .nav-item.active')?.dataset?.page;
+  if (currentPage) {
+    document.querySelectorAll('.bnav[data-page]').forEach(el => {
+      el.classList.toggle('active', el.dataset.page === currentPage);
+    });
+  }
 }
 
 let rates = { USD:38.45, EUR:41.82, GBP:48.90 };
