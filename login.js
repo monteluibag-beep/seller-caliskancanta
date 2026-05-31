@@ -21,7 +21,7 @@ auth.onAuthStateChanged((user) => {
 async function doLogin() {
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
-  const btn = document.getElementById('login-btn');
+  const btn = document.gaetElementById('login-btn');
   const err = document.getElementById('error-msg');
   const errText = document.getElementById('error-text');
 
