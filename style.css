@@ -1135,7 +1135,7 @@ button, .btn {
 }
 
 /* ── Desktop: 1024px+ ── */
-@media (min-width: 1025px) {
+@media (min-width: 769px) {
   .mob-topbar { display: none !important; }
   .bottom-nav { display: none !important; }
   .sidebar { display: flex !important; }
