@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İş Takip — Çalışkan Çanta</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link rel="stylesheet" href="/style.css">
+<style>
+/* Kanban */
+.kanban { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.kanban-col { background: #f5f5f5; border-radius: 12px; padding: 14px; min-height: 400px; }
+.kanban-col-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.kanban-col-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.kanban-count { background: rgba(0,0,0,.1); border-radius: 20px; padding: 2px 8px; font-size: 11px; }
+.task-card { background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 10px; border: 1.5px solid #eee; cursor: grab; transition: box-shadow .15s, transform .15s; }
+.task-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); transform: translateY(-1px); }
+.task-card.dragging { opacity: .5; }
+.task-card-title { font-size: 13px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+.task-card-desc { font-size: 11px; color: #888; margin-bottom: 10px; line-height: 1.5; }
+.task-card-footer { display: flex; align-items: center; justify-content: space-between; }
+.task-assignee { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; }
+.task-av { width: 22px; height: 22px; border-radius: 50%; background: var(--or); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; }
+.task-price { font-size: 12px; font-weight: 700; color: #16A34A; }
+.task-date { font-size: 10px; color: #aaa; }
+.col-todo .kanban-col-title { color: #6366F1; }
+.col-todo { border-top: 3px solid #6366F1; }
+.col-progress .kanban-col-title { color: #F59E0B; }
+.col-progress { border-top: 3px solid #F59E0B; }
+.col-done .kanban-col-title { color: #22C55E; }
+.col-done { border-top: 3px solid #22C55E; }
+.kanban-col.drag-over { background: #e8f5e9; border: 2px dashed #22C55E; }
+
+/* Atölye görünümü */
+.atolye-section { margin-bottom: 24px; }
+.atolye-section-title { font-size: 14px; font-weight: 700; color: #1a1a1a; padding: 12px 0; border-bottom: 2px solid #eee; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.atolye-task { background: #fff; border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; border: 1.5px solid #eee; display: flex; align-items: flex-start; gap: 12px; }
+.atolye-task-info { flex: 1; }
+.atolye-task-title { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+.atolye-task-desc { font-size: 12px; color: #888; margin-bottom: 10px; }
+.atolye-task-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.status-btn { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; }
+.btn-start { background: rgba(99,102,241,.12); color: #6366F1; }
+.btn-done { background: rgba(34,197,94,.12); color: #16A34A; }
+.btn-done-state { background: rgba(34,197,94,.1); color: #16A34A; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.task-hakodis { font-size: 13px; font-weight: 700; color: #16A34A; margin-top: 8px; }
+
+/* Stats */
+.stats-table { width: 100%; border-collapse: collapse; }
+.stats-table th { background: #f8f8f8; padding: 10px 14px; font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; text-align: left; }
+.stats-table td { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+.progress-bar { height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--or); border-radius: 4px; transition: width .5s; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 500; display: none; align-items: center; justify-content: center; padding: 16px; }
+.modal-overlay.show { display: flex; }
+.modal-box { background: #fff; border-radius: 14px; padding: 24px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; }
+.form-input { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+.form-input:focus { border-color: var(--or); outline: none; }
+
+/* Tabs */
+.view-tabs { display: flex; gap: 4px; background: #f0f0f0; padding: 4px; border-radius: 10px; margin-bottom: 20px; }
+.view-tab { flex: 1; padding: 8px; text-align: center; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: none; color: #888; }
+.view-tab.active { background: #fff; color: var(--or); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+
+@media (max-width: 768px) {
+  .kanban { grid-template-columns: 1fr; }
+  .kanban-col { min-height: auto; }
+}
+</style>
+</head>
+<body>
+
+<div id="loading-screen" class="loading-screen">
+  <div class="loading-logo"><i class="ti ti-briefcase"></i></div>
+  <div class="loading-text">Yükleniyor...</div>
+</div>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="drawer" id="drawer">
+  <button class="drawer-close" id="btn-close-drawer"><i class="ti ti-x"></i></button>
+  <div class="sidebar-brand" style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)">
+    <div style="font-size:16px;font-weight:800;color:#fff">Çalışkan</div>
+    <div style="font-size:11px;color:var(--or);font-weight:700">ÇANTA</div>
+  </div>
+  <div class="nav-group" style="padding:12px 0">
+    <a class="nav-item" href="/dashboard.html"><i class="ti ti-layout-dashboard"></i> Ana Ekran</a>
+    <a class="nav-item" href="/products.html"><i class="ti ti-package"></i> Ürünler</a>
+    <a class="nav-item" href="/stock.html"><i class="ti ti-stack"></i> Stoklar</a>
+    <a class="nav-item" href="/sales.html"><i class="ti ti-receipt"></i> Satışlar</a>
+    <a class="nav-item" href="/offers.html"><i class="ti ti-file-text"></i> Teklifler</a>
+    <a class="nav-item active" href="/tasks.html"><i class="ti ti-check"></i> İş Takip</a>
+    <a class="nav-item" href="/categories.html"><i class="ti ti-tag"></i> Kategoriler</a>
+    <a class="nav-item" href="/users.html"><i class="ti ti-users"></i> Kullanıcılar</a>
+    <a class="nav-item" href="/settings.html"><i class="ti ti-settings"></i> Ayarlar</a>
+  </div>
+  <div style="margin-top:auto;padding:16px;border-top:1px solid rgba(255,255,255,.08)">
+    <button class="sidebar-logout-btn btn-logout-trigger"><i class="ti ti-logout"></i> Çıkış Yap</button>
+  </div>
+</div>
+
+<!-- Mob topbar -->
+<div class="mob-topbar">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="hamburger" id="btn-open-drawer-mob"><i class="ti ti-menu-2"></i></button>
+    <span style="font-size:15px;font-weight:700">İş Takip</span>
+  </div>
+</div>
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <a class="bnav" href="/dashboard.html"><i class="ti ti-layout-dashboard"></i>Ana</a>
+  <a class="bnav" href="/products.html"><i class="ti ti-package"></i>Ürünler</a>
+  <a class="bnav active" href="/tasks.html"><i class="ti ti-check"></i>İşler</a>
+  <a class="bnav" href="/offers.html"><i class="ti ti-file-text"></i>Teklifler</a>
+  <button class="bnav" id="btn-open-drawer-bottom"><i class="ti ti-dots"></i>Daha</button>
+</div>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-info" style="flex:1">
+        <div style="font-size:15px;font-weight:800;color:#fff">Çalışkan</div>
+        <div style="font-size:11px;color:var(--or);font-weight:700">ÇANTA</div>
+      </div>
+      <button class="sidebar-toggle" id="sidebar-toggle">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none"><rect x="0" y="0" width="18" height="2" rx="1" fill="currentColor"/><rect x="0" y="6" width="14" height="2" rx="1" fill="currentColor"/><rect x="0" y="12" width="10" height="2" rx="1" fill="currentColor"/></svg>
+      </button>
+    </div>
+    <nav>
+      <div class="nav-label">Genel</div>
+      <a class="nav-item" href="/dashboard.html"><i class="ti ti-layout-dashboard"></i> <span class="nav-text">Ana Ekran</span></a>
+      <div class="nav-label">Yönetim</div>
+      <a class="nav-item" href="/products.html"><i class="ti ti-package"></i> <span class="nav-text">Ürünler</span></a>
+      <a class="nav-item" href="/stock.html"><i class="ti ti-stack"></i> <span class="nav-text">Stoklar</span></a>
+      <a class="nav-item" href="/sales.html"><i class="ti ti-receipt"></i> <span class="nav-text">Satışlar</span></a>
+      <a class="nav-item" href="/offers.html"><i class="ti ti-file-text"></i> <span class="nav-text">Teklifler</span></a>
+      <a class="nav-item active" href="/tasks.html"><i class="ti ti-check"></i> <span class="nav-text">İş Takip</span></a>
+      <div class="nav-label">Sistem</div>
+      <a class="nav-item" href="/categories.html"><i class="ti ti-tag"></i> <span class="nav-text">Kategoriler</span></a>
+      <a class="nav-item" href="/users.html"><i class="ti ti-users"></i> <span class="nav-text">Kullanıcılar</span></a>
+      <a class="nav-item" href="/settings.html"><i class="ti ti-settings"></i> <span class="nav-text">Ayarlar</span></a>
+    </nav>
+    <div class="rates-bar">
+      <div class="rate-row"><span class="rate-label">🇺🇸 USD/TRY</span><span class="rate-val" id="r-usd">—</span></div>
+      <div class="rate-row"><span class="rate-label">🇪🇺 EUR/TRY</span><span class="rate-val" id="r-eur">—</span></div>
+      <div class="rate-time" id="r-time">güncelleniyor...</div>
+      <div class="rate-divider" style="border-top:1px solid var(--border);margin:10px 0"></div>
+      <div class="sidebar-user-row">
+        <div class="user-av" id="user-av-sidebar">—</div>
+        <div><div class="user-name" id="user-name-sidebar">—</div><div style="font-size:11px;color:var(--text-3)" id="user-email-sidebar"></div></div>
+      </div>
+      <button class="sidebar-logout-btn btn-logout-trigger"><i class="ti ti-logout"></i><span>Çıkış Yap</span></button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">İş Takip</div>
+      </div>
+      <div class="topbar-right" id="topbar-actions"></div>
+    </div>
+
+    <div class="page-content">
+      <!-- View tabs - sadece admin/müdür için -->
+      <div id="admin-tabs" style="display:none">
+        <div class="view-tabs">
+          <button class="view-tab active" onclick="switchView('kanban')"><i class="ti ti-layout-kanban"></i> Kanban</button>
+          <button class="view-tab" onclick="switchView('stats')"><i class="ti ti-chart-bar"></i> İstatistik</button>
+          <button class="view-tab" onclick="switchView('hakodis')"><i class="ti ti-coin"></i> Hakediş</button>
+        </div>
+      </div>
+
+      <!-- Kanban View (Admin/Müdür) -->
+      <div id="view-kanban">
+        <div class="kanban">
+          <div class="kanban-col col-todo" id="col-todo" ondragover="dragOver(event)" ondrop="drop(event,'todo')">
+            <div class="kanban-col-header">
+              <div class="kanban-col-title"><i class="ti ti-circle" style="color:#6366F1"></i> Yapılacak <span class="kanban-count" id="cnt-todo">0</span></div>
+            </div>
+            <div id="tasks-todo"></div>
+          </div>
+          <div class="kanban-col col-progress" id="col-progress" ondragover="dragOver(event)" ondrop="drop(event,'in_progress')">
+            <div class="kanban-col-header">
+              <div class="kanban-col-title"><i class="ti ti-progress" style="color:#F59E0B"></i> Devam Ediyor <span class="kanban-count" id="cnt-progress">0</span></div>
+            </div>
+            <div id="tasks-progress"></div>
+          </div>
+          <div class="kanban-col col-done" id="col-done" ondragover="dragOver(event)" ondrop="drop(event,'done')">
+            <div class="kanban-col-header">
+              <div class="kanban-col-title"><i class="ti ti-check" style="color:#22C55E"></i> Tamamlandı <span class="kanban-count" id="cnt-done">0</span></div>
+            </div>
+            <div id="tasks-done"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- İstatistik View -->
+      <div id="view-stats" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Atölye Performansı</div></div>
+          <div style="padding:16px">
+            <div class="table-wrap">
+              <table class="stats-table">
+                <thead><tr><th>Atölye</th><th>Yapılacak</th><th>Devam</th><th>Tamamlanan</th><th>Toplam Hakediş</th><th>Tamamlanma</th></tr></thead>
+                <tbody id="stats-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hakediş View -->
+      <div id="view-hakodis" style="display:none">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Hakediş Özeti</div></div>
+          <div style="padding:16px">
+            <div class="table-wrap">
+              <table class="stats-table">
+                <thead><tr><th>Atölye</th><th>Tamamlanan İş</th><th>Toplam Hakediş</th><th>Bekleyen</th><th>Durum</th></tr></thead>
+                <tbody id="hakodis-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Atölye View -->
+      <div id="view-atolye" style="display:none">
+        <div class="atolye-section">
+          <div class="atolye-section-title"><i class="ti ti-circle" style="color:#6366F1"></i> Yapılacak İşlerim</div>
+          <div id="my-todo"></div>
+        </div>
+        <div class="atolye-section">
+          <div class="atolye-section-title"><i class="ti ti-progress" style="color:#F59E0B"></i> Devam Eden İşlerim</div>
+          <div id="my-progress"></div>
+        </div>
+        <div class="atolye-section">
+          <div class="atolye-section-title"><i class="ti ti-check" style="color:#22C55E"></i> Bitirdiğim İşler</div>
+          <div id="my-done"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Görev Oluşturma Modalı -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal-box">
+    <div class="modal-title">
+      <span>Yeni Görev Oluştur</span>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#999">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Görev Başlığı *</label>
+      <input class="form-input" id="t-title" placeholder="Görev adını yazın">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Açıklama</label>
+      <textarea class="form-input" id="t-desc" rows="3" placeholder="Görev detayları..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Atanacak Atölye *</label>
+      <select class="form-input" id="t-assign">
+        <option value="">Seçiniz...</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hakediş Tutarı (₺)</label>
+      <input class="form-input" id="t-price" type="number" placeholder="0.00">
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:10px">
+      <input type="checkbox" id="t-price-visible" style="width:18px;height:18px;accent-color:var(--or)">
+      <label for="t-price-visible" style="font-size:13px;color:#555;cursor:pointer">Atölye hakediş tutarını görebilsin</label>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Öncelik</label>
+      <select class="form-input" id="t-priority">
+        <option value="normal">Normal</option>
+        <option value="high">Yüksek</option>
+        <option value="urgent">Acil</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button onclick="closeModal()" class="btn btn-secondary" style="flex:1">İptal</button>
+      <button onclick="saveTask()" class="btn btn-primary" style="flex:1" id="save-task-btn">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initPage, app } from '/_common.js';
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, orderBy, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+initPage('tasks', async (user) => {
+  const db = getFirestore(app);
+  const tasksCol = collection(db, 'tasks');
+  const usersCol = collection(db, 'users');
+
+  // Kullanıcı rolünü al
+  let userRole = 'atolye';
+  let userName = user.displayName || user.email.split('@')[0];
+  try {
+    const snap = await getDocs(query(usersCol, where('email','==',user.email)));
+    if (!snap.empty) {
+      userRole = snap.docs[0].data().role || 'atolye';
+      userName = snap.docs[0].data().name || userName;
+    }
+  } catch(e) {}
+
+  // Admin/Müdür veya Atölye görünümü
+  if (userRole === 'admin' || userRole === 'atolye' && userRole !== 'atolye') {
+    // Aslında role kontrolü
+  }
+
+  const isAdmin = userRole === 'admin' || userRole === 'sales';
+  const isAtolyeRole = userRole === 'atolye';
+
+  if (isAdmin) {
+    document.getElementById('admin-tabs').style.display = 'block';
+    document.getElementById('view-kanban').style.display = 'block';
+    document.getElementById('view-atolye').style.display = 'none';
+    // Yeni görev butonu ekle
+    document.getElementById('topbar-actions').innerHTML = `
+      <button class="btn btn-primary" onclick="openModal()"><i class="ti ti-plus"></i> Yeni Görev</button>
+    `;
+    loadAtolyes();
+  } else {
+    document.getElementById('admin-tabs').style.display = 'none';
+    document.getElementById('view-kanban').style.display = 'none';
+    document.getElementById('view-atolye').style.display = 'block';
+  }
+
+  // Atölye listesini yükle (modal için)
+  async function loadAtolyes() {
+    try {
+      const snap = await getDocs(query(usersCol, where('role','==','atolye')));
+      const sel = document.getElementById('t-assign');
+      snap.docs.forEach(d => {
+        const u = d.data();
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.dataset.name = u.name || u.email;
+        opt.dataset.email = u.email;
+        opt.textContent = u.name || u.email;
+        sel.appendChild(opt);
+      });
+    } catch(e) {
+      // Demo atölyeler
+      const sel = document.getElementById('t-assign');
+      [['demo1','Ali Yılmaz'],['demo2','Veli Kaya'],['demo3','Ayşe Demir']].forEach(([id,name]) => {
+        const opt = document.createElement('option');
+        opt.value = id; opt.dataset.name = name; opt.textContent = name;
+        sel.appendChild(opt);
+      });
+    }
+  }
+
+  // Görevleri gerçek zamanlı dinle
+  let allTasks = [];
+  const unsubscribe = onSnapshot(tasksCol, (snap) => {
+    allTasks = snap.docs.map(d => ({id:d.id,...d.data()}));
+    if (isAdmin) {
+      renderKanban(allTasks);
+      renderStats(allTasks);
+      renderHakodis(allTasks);
+    } else {
+      renderAtolyeView(allTasks, user.uid, userName);
+    }
+  }, async () => {
+    // Fallback - onSnapshot çalışmazsa getDocs kullan
+    try {
+      const snap = await getDocs(tasksCol);
+      allTasks = snap.docs.map(d => ({id:d.id,...d.data()}));
+    } catch(e) {
+      allTasks = getDemoTasks();
+    }
+    if (isAdmin) {
+      renderKanban(allTasks);
+      renderStats(allTasks);
+      renderHakodis(allTasks);
+    } else {
+      renderAtolyeView(allTasks, user.uid, userName);
+    }
+  });
+
+  // Kanban render
+  window.renderKanban = (tasks) => {
+    const cols = { todo: [], in_progress: [], done: [] };
+    tasks.forEach(t => { if (cols[t.status]) cols[t.status].push(t); });
+
+    document.getElementById('cnt-todo').textContent = cols.todo.length;
+    document.getElementById('cnt-progress').textContent = cols.in_progress.length;
+    document.getElementById('cnt-done').textContent = cols.done.length;
+
+    const priorityColor = { urgent:'#DC2626', high:'#F59E0B', normal:'#6366F1' };
+    const priorityLabel = { urgent:'🔴 Acil', high:'🟡 Yüksek', normal:'🔵 Normal' };
+
+    ['todo','in_progress','done'].forEach((status, i) => {
+      const containerId = ['tasks-todo','tasks-progress','tasks-done'][i];
+      const container = document.getElementById(containerId);
+      container.innerHTML = cols[status].length === 0
+        ? `<div style="text-align:center;padding:30px;color:#ccc;font-size:13px">Görev yok</div>`
+        : cols[status].map(t => `
+          <div class="task-card" draggable="true" ondragstart="dragStart(event,'${t.id}')" ondragend="dragEnd(event)">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
+              <div class="task-card-title">${t.title}</div>
+              <span style="font-size:10px;background:${priorityColor[t.priority]||'#6366F1'}22;color:${priorityColor[t.priority]||'#6366F1'};padding:2px 8px;border-radius:20px;white-space:nowrap;margin-left:8px">${priorityLabel[t.priority]||'Normal'}</span>
+            </div>
+            ${t.desc ? `<div class="task-card-desc">${t.desc}</div>` : ''}
+            <div class="task-card-footer">
+              <div class="task-assignee">
+                <div class="task-av">${(t.assignedName||'?').substring(0,2).toUpperCase()}</div>
+                <span>${t.assignedName||'Atanmamış'}</span>
+              </div>
+              <div style="text-align:right">
+                <div class="task-price">₺${(t.price||0).toLocaleString('tr-TR')}</div>
+                <div class="task-date">${t.createdAt?.toDate ? t.createdAt.toDate().toLocaleDateString('tr-TR') : '—'}</div>
+              </div>
+            </div>
+            ${status === 'done' && t.completedAt ? `<div style="font-size:10px;color:#16A34A;margin-top:6px">✓ ${t.completedAt.toDate ? t.completedAt.toDate().toLocaleDateString('tr-TR') : ''}</div>` : ''}
+          </div>
+        `).join('');
+    });
+  };
+
+  // Stats render
+  window.renderStats = (tasks) => {
+    const byUser = {};
+    tasks.forEach(t => {
+      const k = t.assignedName || 'Bilinmiyor';
+      if (!byUser[k]) byUser[k] = { todo:0, inProgress:0, done:0, totalPrice:0 };
+      if (t.status === 'todo') byUser[k].todo++;
+      else if (t.status === 'in_progress') byUser[k].inProgress++;
+      else if (t.status === 'done') { byUser[k].done++; byUser[k].totalPrice += t.price||0; }
+    });
+    const tbody = document.getElementById('stats-tbody');
+    tbody.innerHTML = Object.entries(byUser).map(([name, d]) => {
+      const total = d.todo + d.inProgress + d.done;
+      const pct = total > 0 ? Math.round((d.done/total)*100) : 0;
+      return `<tr>
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="task-av">${name.substring(0,2).toUpperCase()}</div>${name}</div></td>
+        <td>${d.todo}</td>
+        <td>${d.inProgress}</td>
+        <td style="font-weight:700;color:#16A34A">${d.done}</td>
+        <td style="font-weight:700;color:var(--or)">₺${d.totalPrice.toLocaleString('tr-TR')}</td>
+        <td style="min-width:120px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${pct}%"></div></div>
+            <span style="font-size:12px;font-weight:700">%${pct}</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa">Henüz görev yok</td></tr>';
+  };
+
+  // Hakediş render
+  window.renderHakodis = (tasks) => {
+    const byUser = {};
+    tasks.forEach(t => {
+      const k = t.assignedName || 'Bilinmiyor';
+      if (!byUser[k]) byUser[k] = { done:0, totalPrice:0, pending:0 };
+      if (t.status === 'done') { byUser[k].done++; byUser[k].totalPrice += t.price||0; }
+      else byUser[k].pending++;
+    });
+    const tbody = document.getElementById('hakodis-tbody');
+    tbody.innerHTML = Object.entries(byUser).map(([name, d]) => `
+      <tr>
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="task-av">${name.substring(0,2).toUpperCase()}</div>${name}</div></td>
+        <td>${d.done}</td>
+        <td style="font-weight:800;font-size:15px;color:#16A34A">₺${d.totalPrice.toLocaleString('tr-TR')}</td>
+        <td>${d.pending} iş bekliyor</td>
+        <td><span style="background:rgba(34,197,94,.12);color:#16A34A;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600">Aktif</span></td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px;color:#aaa">Henüz veri yok</td></tr>';
+  };
+
+  // Atölye görünümü
+  window.renderAtolyeView = (tasks, uid, name) => {
+    const myTasks = tasks.filter(t => t.assignedUid === uid || t.assignedName === name);
+    const sections = { todo: 'my-todo', in_progress: 'my-progress', done: 'my-done' };
+    Object.entries(sections).forEach(([status, id]) => {
+      const filtered = myTasks.filter(t => t.status === status);
+      const container = document.getElementById(id);
+      if (!container) return;
+      container.innerHTML = filtered.length === 0
+        ? `<div style="color:#aaa;font-size:13px;padding:10px 0">Görev yok</div>`
+        : filtered.map(t => `
+          <div class="atolye-task">
+            <div style="width:40px;height:40px;border-radius:10px;background:${status==='done'?'rgba(34,197,94,.1)':status==='in_progress'?'rgba(245,158,11,.1)':'rgba(99,102,241,.1)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <i class="ti ti-${status==='done'?'check':status==='in_progress'?'progress':'circle'}" style="color:${status==='done'?'#22C55E':status==='in_progress'?'#F59E0B':'#6366F1'}"></i>
+            </div>
+            <div class="atolye-task-info">
+              <div class="atolye-task-title">${t.title}</div>
+              ${t.desc ? `<div class="atolye-task-desc">${t.desc}</div>` : ''}
+              ${t.priceVisible && t.price ? `<div class="task-hakodis">₺${(t.price||0).toLocaleString('tr-TR')} hakediş</div>` : ''}
+              <div class="atolye-task-actions">
+                ${status === 'todo' ? `<button class="status-btn btn-start" onclick="updateStatus('${t.id}','in_progress')"><i class="ti ti-player-play"></i> Başladım</button>` : ''}
+                ${status === 'in_progress' ? `<button class="status-btn btn-done" onclick="updateStatus('${t.id}','done')"><i class="ti ti-check"></i> Tamamladım</button>` : ''}
+                ${status === 'done' ? `<span class="btn-done-state"><i class="ti ti-check"></i> Tamamlandı</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('');
+    });
+  };
+
+  // Durum güncelle
+  window.updateStatus = async (taskId, newStatus) => {
+    try {
+      const updates = { status: newStatus };
+      if (newStatus === 'in_progress') updates.startedAt = serverTimestamp();
+      if (newStatus === 'done') updates.completedAt = serverTimestamp();
+      await updateDoc(doc(db, 'tasks', taskId), updates);
+    } catch(e) {
+      // Demo mod - local güncelle
+      const t = allTasks.find(x => x.id === taskId);
+      if (t) { t.status = newStatus; renderAtolyeView(allTasks, user.uid, userName); }
+    }
+  };
+
+  // Drag & Drop
+  let draggedId = null;
+  window.dragStart = (e, id) => { draggedId = id; e.target.classList.add('dragging'); };
+  window.dragEnd = (e) => { e.target.classList.remove('dragging'); document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over')); };
+  window.dragOver = (e) => { e.preventDefault(); e.currentTarget.classList.add('drag-over'); };
+  window.drop = async (e, newStatus) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    if (!draggedId) return;
+    await window.updateStatus(draggedId, newStatus);
+    draggedId = null;
+  };
+
+  // Modal
+  window.openModal = () => document.getElementById('modal-task').classList.add('show');
+  window.closeModal = () => document.getElementById('modal-task').classList.remove('show');
+
+  // Görev kaydet
+  window.saveTask = async () => {
+    const title = document.getElementById('t-title').value.trim();
+    const desc = document.getElementById('t-desc').value.trim();
+    const assignSel = document.getElementById('t-assign');
+    const assignId = assignSel.value;
+    const assignName = assignSel.options[assignSel.selectedIndex]?.dataset?.name || '';
+    const price = parseFloat(document.getElementById('t-price').value) || 0;
+    const priceVisible = document.getElementById('t-price-visible').checked;
+    const priority = document.getElementById('t-priority').value;
+
+    if (!title || !assignId) { alert('Başlık ve atölye zorunludur'); return; }
+
+    const btn = document.getElementById('save-task-btn');
+    btn.textContent = 'Kaydediliyor...'; btn.disabled = true;
+
+    try {
+      await addDoc(tasksCol, {
+        title, desc, assignedUid: assignId, assignedName: assignName,
+        price, priceVisible, priority, status: 'todo',
+        createdBy: user.email, createdAt: serverTimestamp()
+      });
+      closeModal();
+      document.getElementById('t-title').value = '';
+      document.getElementById('t-desc').value = '';
+      document.getElementById('t-price').value = '';
+    } catch(e) {
+      // Demo mod
+      allTasks.push({ id: Date.now()+'', title, desc, assignedName: assignName, price, priceVisible, priority, status:'todo' });
+      renderKanban(allTasks);
+      closeModal();
+    }
+    btn.textContent = 'Kaydet'; btn.disabled = false;
+  };
+
+  // Tab geçişi
+  window.switchView = (view) => {
+    ['kanban','stats','hakodis'].forEach(v => {
+      document.getElementById('view-'+v).style.display = v === view ? 'block' : 'none';
+    });
+    document.querySelectorAll('.view-tab').forEach((t,i) => {
+      t.classList.toggle('active', ['kanban','stats','hakodis'][i] === view);
+    });
+  };
+});
+
+function getDemoTasks() {
+  return [
+    {id:'1', title:'Sırt Çantası Dikişi', desc:'50 adet SC-26-0001 modeli', assignedName:'Ali Yılmaz', price:2500, priceVisible:true, priority:'high', status:'in_progress'},
+    {id:'2', title:'Laptop Çantası Fermuar', desc:'30 adet LPT-26-0001', assignedName:'Veli Kaya', price:1800, priceVisible:false, priority:'normal', status:'todo'},
+    {id:'3', title:'Omuz Çantası Baskı', desc:'100 adet logo baskısı', assignedName:'Ali Yılmaz', price:3200, priceVisible:true, priority:'urgent', status:'done'},
+    {id:'4', title:'Bel Çantası Kesim', desc:'20 adet BEL-26-0001', assignedName:'Ayşe Demir', price:900, priceVisible:false, priority:'normal', status:'todo'},
+    {id:'5', title:'Evrak Çantası Montaj', desc:'15 adet EVR-26-0001', assignedName:'Veli Kaya', price:1200, priceVisible:true, priority:'high', status:'done'},
+  ];
+}
+</script>
+</body>
+</html>
